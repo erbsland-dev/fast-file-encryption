@@ -139,11 +139,14 @@ class Decryptor:
         block_type, block_data = self._read_block(maximum_size=1000)
         if block_type != b'ESYM':
             raise IntegrityError('Expecting `ESYM` block, but found another.')
-        encryption_key = self.private_key.decrypt(
-            block_data,
-            OAEP(mgf=MGF1(algorithm=hashes.SHA256()),
-                 algorithm=hashes.SHA256(),
-                 label=None))
+        try:
+            encryption_key = self.private_key.decrypt(
+                block_data,
+                OAEP(mgf=MGF1(algorithm=hashes.SHA256()),
+                     algorithm=hashes.SHA256(),
+                     label=None))
+        except ValueError as e:
+            raise IntegrityError(f'Failed to read the symmetric key from the file. Error: {e}')
         if len(encryption_key) != AES_KEY_LENGTH_BYTES:
             raise IntegrityError('The decrypted key has an unexpected length.')
         self.algorithm = algorithms.AES(encryption_key)
@@ -318,7 +321,7 @@ class Decryptor:
                     encrypted_data_left -= len(encrypted_data)
                     decrypted_data_left -= len(decrypted_data)
                 # For the AES/CBC cipher, there is usually no data generated with finalize, because the data
-                # is decrypted block wise. The following code is is place, in case the cipher is changed.
+                # is decrypted block wise. The following code is in place, in case the cipher is changed.
                 decrypted_data = cipher_context.finalize()
                 if decrypted_data and decrypted_data_left > 0:
                     decrypted_data = decrypted_data[:decrypted_data_left]

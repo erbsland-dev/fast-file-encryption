@@ -61,14 +61,22 @@ For empty files with a size of zero, this block and the hash block is empty.
 
 The hash for the decrypted file data. Encrypted.
 
-### `ENDH` = End of file hash
+### `ENDH` = End of file with hash
 
 Marks the end of the file and contains a SHA3-512 hash for the whole file, up to this block, without the bytes of the
-block type. The bytes following this block type are therefore always 0x40,0,0,0,0,0,0,0 for a 64 byte sized block.
-Followed by the 64 byte hash.
+block type. The bytes following this block type are therefore always 0x40,0,0,0,0,0,0,0 for a 64 byte sized block,
+followed by the 64 byte hash.
 
-In order to quickly check the integrity of a file, you can create a digest of the file data up to `file_size - 76 bytes`
-, then skip 12 bytes, read the next 64 and compare the digest.
+In order to quickly check the integrity of a file, you can create a digest of the file data up to
+`file_size - 76 bytes`, then skip 12 bytes, read the next 64 and compare the digest.
+
+### `ENDS` = End of streamed file
+
+Marks the end of a streamed file that contains no SHA3-512 hash for the whole file. The bytes following this block type
+are always 0x40,0,0,0,0,0,0,0 for a 64 byte sized block, followed by the 64 zero bytes. This zero bytes are added to
+allow a quick verification of files which contain a hash using a seek operation (see `ENDH`).
+
+A file always ends in a `ENDH` or `ENDS` block. There must be no other block following the end blocks.
 
 ### Block Order
 
@@ -81,6 +89,8 @@ Encrypted Data Block Format
 The data format in an encrypted data block:
 
 - 8 bytes, big endian, unsigned, with the size of the decrypted data.
+  - If the encrypted file is empty, the *block* is empty and this size is not given.
+  - If this value is greater than zero, it is the size of the decrypted data in bytes.
 - 16 bytes (for AES-256/CBC) with the IV for the encryption
 - The encrypted data, aligned to the cipher block size.
 

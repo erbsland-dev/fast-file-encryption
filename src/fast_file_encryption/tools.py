@@ -84,11 +84,15 @@ def save_key_pair(*, public_key: Path, private_key: Path):
         raise ValueError('Missing public key path')
     if not private_key:
         raise ValueError('Missing private key path')
+    if not isinstance(public_key, Path):
+        raise ValueError('`public_key` has to be a `Path` object.')
+    if not isinstance(private_key, Path):
+        raise ValueError('`private_key` has to be a `Path` object.')
     key = rsa.generate_private_key(public_exponent=65537, key_size=RSA_KEY_SIZE)
-    private_key.write_bytes(key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption()))
-    public_key.write_bytes(key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo))
+    private_key_data = key.private_bytes(encoding=serialization.Encoding.PEM,
+                                         format=serialization.PrivateFormat.PKCS8,
+                                         encryption_algorithm=serialization.NoEncryption())
+    private_key.write_bytes(private_key_data)
+    public_key_data = key.public_key().public_bytes(encoding=serialization.Encoding.PEM,
+                                                    format=serialization.PublicFormat.SubjectPublicKeyInfo)
+    public_key.write_bytes(public_key_data)

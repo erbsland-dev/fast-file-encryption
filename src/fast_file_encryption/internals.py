@@ -43,4 +43,5 @@ KNOWN_BLOCK_TYPES = [  # All known block types.
     b'MDHA',
     b'DATA',
     b'DTHA',
-    b'ENDH']
+    b'ENDH',
+    b'ENDS']

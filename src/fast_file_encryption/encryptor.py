@@ -14,11 +14,12 @@
 
 
 import hashlib
+import io
 import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import BinaryIO, Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
@@ -45,7 +46,7 @@ class Encryptor:
         """
         self.public_key = public_key  # The public key for the encryption.
         self.destination_file_digest = None  # The overall file digest to use.
-        self.destination_file_handle: Optional[BinaryIO] = None  # The current target file handle.
+        self.destination_file_handle: Optional[io.BufferedIOBase] = None  # The current target file handle.
         self.algorithm: Optional[algorithms.CipherAlgorithm] = None  # The encryption algorithm which is used.
         # Generate the hash for the given public key.
         self.public_key_hash = hashlib.sha3_512(self.public_key.public_bytes(
@@ -58,7 +59,8 @@ class Encryptor:
         :param data: The data block to write.
         """
         self.destination_file_handle.write(data)
-        self.destination_file_digest.update(data)
+        if self.destination_file_digest:
+            self.destination_file_digest.update(data)
 
     def _write_magic(self):
         """
@@ -182,7 +184,7 @@ class Encryptor:
         self._write_encrypted_block(b'DATA', source_data)
         self._write_encrypted_block(b'DTHA', hashlib.sha3_512(source_data).digest())
 
-    def _write_file_data(self, source_size: int, sf: BinaryIO):
+    def _write_file_data(self, source_size: int, sf: io.BufferedIOBase):
         """
         Write the  file data encrypted to the destination.
 
@@ -218,7 +220,57 @@ class Encryptor:
         # Write the hash of the original data.
         self._write_encrypted_block(b'DTHA', block_hash_context.digest())
 
-    def _write_end_mark(self):
+    def _stream_data(self, source_file_handle: io.BufferedIOBase):
+        """
+        Stream the encrypted data to the target stream.
+
+        :param source_file_handle: The open source stream.
+        """
+        block = source_file_handle.read(WORKING_BLOCK_SIZE)
+        if len(block) == 0:
+            # Write two empty blocks for empty files. This is safer than writing encryption data.
+            self._write_block(b'DATA', b'')
+            self._write_block(b'DTHA', b'')
+            return
+        elif len(block) < WORKING_BLOCK_SIZE:
+            self._write_encrypted_block(b'DATA', block)
+            self._write_encrypted_block(b'DTHA', hashlib.sha3_512(block).digest())
+            return
+        encryptor, iv = self._prepare_encryption()
+        self._write_with_digest(b'DATA')  # Write the block type.
+        data_size_position = self.destination_file_handle.tell()
+        self._write_with_digest(bytes(SIZE_VALUE_LENGTH * 2))  # Write dummy sizes.
+        final_block_size = SIZE_VALUE_LENGTH
+        # Write the IV
+        self._write_with_digest(iv)
+        final_block_size += len(iv)
+        # Encrypt and write the actual data.
+        original_data_size = 0
+        block_hash_context = hashlib.sha3_512()
+        # Encrypt the first block
+        block_hash_context.update(block)
+        original_data_size += len(block)
+        self._write_with_digest(encryptor.update(block))
+        final_block_size += len(block)
+        # Encrypt all following blocks
+        while block := source_file_handle.read(WORKING_BLOCK_SIZE):
+            block_hash_context.update(block)
+            block_size = len(block)
+            original_data_size += block_size
+            if block_size < WORKING_BLOCK_SIZE:  # Fill with random padding.
+                block += os.urandom(AES_BLOCK_SIZE_BYTES - (block_size % AES_BLOCK_SIZE_BYTES))
+            self._write_with_digest(encryptor.update(block))
+            final_block_size += len(block)
+        # Jump back to fix the size values.
+        end_of_block_position = self.destination_file_handle.tell()
+        self.destination_file_handle.seek(data_size_position)
+        self._write_with_digest(final_block_size.to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
+        self._write_with_digest(original_data_size.to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
+        self.destination_file_handle.seek(end_of_block_position)
+        # Write the hash of the original data.
+        self._write_encrypted_block(b'DTHA', block_hash_context.digest())
+
+    def _write_end_with_hash(self):
         """
         Write the end mark with the file hash.
         """
@@ -227,6 +279,17 @@ class Encryptor:
         self.destination_file_handle.write(
             len(file_digest).to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
         self.destination_file_handle.write(file_digest)
+        self.destination_file_handle.flush()
+
+    def _write_end_of_stream(self):
+        """
+        Write the end mark without file hash.
+        """
+        self.destination_file_handle.write(b'ENDS')
+        data = bytes(64)
+        self.destination_file_handle.write(
+            len(data).to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
+        self.destination_file_handle.write(data)
         self.destination_file_handle.flush()
 
     def _clean_up(self):
@@ -285,6 +348,10 @@ class Encryptor:
             Use the suffix `.fonfenc` to the target files for best compatibility.
         :param meta: A dictionary with metadata for this file.
         """
+        if not isinstance(source_data, bytes):
+            raise ValueError('`source_data` has to be a bytes object.')
+        if not isinstance(destination, Path):
+            raise ValueError('`destination` has to be a `Path` from pathlib.')
         self._verify_metadata(meta)
         with destination.open('wb') as destination_file_handle:
             self.destination_file_digest = hashlib.sha3_512()
@@ -292,7 +359,7 @@ class Encryptor:
             self._write_file_header()
             self._write_meta_data(meta)
             self._write_bytes_data(source_data)
-            self._write_end_mark()
+            self._write_end_with_hash()
         self._clean_up()
 
     def copy_encrypted(self, source: Path, destination: Path, meta: Dict[str, Any] = None,
@@ -309,6 +376,12 @@ class Encryptor:
             Only missing fields are added to the metadata.
         :raises DataTooLargeError: If the source file exceeds the maximum file size limit of 1 TB.
         """
+        if not isinstance(source, Path):
+            raise ValueError('`source` has to be a `Path` from pathlib.')
+        if not isinstance(destination, Path):
+            raise ValueError('`destination` has to be a `Path` from pathlib.')
+        if not isinstance(add_source_metadata, bool):
+            raise ValueError('`add_source_metadata` has to be a boolean value.')
         self._verify_metadata(meta)
         source_file_size = source.stat().st_size
         if source_file_size > FILE_SIZE_LIMIT:
@@ -321,5 +394,38 @@ class Encryptor:
                 meta = self._add_source_metadata(source, meta)
             self._write_meta_data(meta)
             self._write_file_data(source_file_size, source_file_handle)
-            self._write_end_mark()
+            self._write_end_with_hash()
+        self._clean_up()
+
+    def stream_encrypted(self, source_io: io.BufferedIOBase, destination_io: io.BufferedIOBase,
+                         meta: Dict[str, Any] = None):
+        """
+        Read data from a stream and write it encrypted into another stream.
+
+        For short streams, smaller than `WORKING_BLOCK_SIZE` this will write the destination stream
+        on the fly. Larger streams will write some dummy data block header, encrypt all the data from the
+        source stream, but then **seek** back to the data block start to write the correctly original
+        and encrypted sizes.
+
+        :param source_io: The **open** source stream, compatible with io.BufferedIOBase.
+        :param destination_io: The **open** destination stream, compatible with io.BufferedIOBase.
+        :param meta: A dictionary with metadata for this file.
+        """
+        if not isinstance(source_io, io.BufferedIOBase):
+            raise ValueError('`source_io` has to be a subclass of `io.BufferedIOBase`.')
+        if not source_io.readable():
+            raise ValueError('The source stream has to be readable.')
+        if not isinstance(destination_io, io.BufferedIOBase):
+            raise ValueError('`destination_io` has to be a subclass of `io.BufferedIOBase`.')
+        if not destination_io.writable():
+            raise ValueError('The destination stream has to be writeable.')
+        if not destination_io.seekable():
+            raise ValueError('The destination stream has to be seekable.')
+        self._verify_metadata(meta)
+        self.destination_file_digest = None
+        self.destination_file_handle = destination_io
+        self._write_file_header()
+        self._write_meta_data(meta)
+        self._stream_data(source_io)
+        self._write_end_of_stream()
         self._clean_up()
