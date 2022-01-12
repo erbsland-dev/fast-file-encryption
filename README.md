@@ -2,7 +2,7 @@ Fast File Encryption
 ======================
 
 The *Fast File Encryption* is an open, very simple and well-designed file encryption solution for medium and large
-files (up to gigabytes). It uses asymmetric RSA keys to encrypt and decrypt the files, in order to store the public key
+files (up to terabytes). It uses asymmetric RSA keys to encrypt and decrypt the files, in order to store the public key
 for encryption on the server, with no worries.
 
 Use Cases for the Design
@@ -61,9 +61,8 @@ The file format is designed in a way, to efficiently encrypt large files, if the
 order of the blocks is arranged in a way, to allow combining hashing and encryption over the source file, without the
 need to read the same data twice.
 
-The only disadvantage is, the size of the data has to be known: The source data have to be locally stored or kept in
-memory before encryption. While it is possible to encrypt streamed data, by replacing the length fields in the target
-file, it is not optimal and requires multiple reading passes over the data.
+Encrypting while streaming large amounts of data is also supported. This allows to encrypt data in memory while reading
+it from e.g. a network source and also stream it to a storage provider.
 
 ### Separate Metadata Block
 
@@ -123,14 +122,14 @@ The used encryption is strong and well established:
 File Sizes
 ----------
 
-By design, the format was made for files in a range of megabytes up to several gigabytes.
+By design, the format was made for files in a range of megabytes up to several terabytes.
 
 Encrypting a large amount of small files generates lots of additional data. In these cases, consider collecting these
 files into a container (e.g. ZIP container) first, then encrypt this container.
 
-Files up to 1 TB should prove no problem, as the used AES-256/CBC encryption is efficient and fast.
+Files up to 10 TB should prove no problem, as the used AES-256/CBC encryption is efficient and fast.
 
-There is an *arbitrary limit* for files greater than 1 TB. This limit is set to have a reasonable limit to verify the
+There is an *arbitrary limit* for files greater than 10 TB. This limit is set to have a reasonable limit to verify the
 file integrity.
 
 

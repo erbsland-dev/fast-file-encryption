@@ -30,7 +30,7 @@ from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from .errors import DataTooLargeError
 from .internals import AES_BLOCK_SIZE_BYTES, \
     FILE_CONFIG_TEXT, FILE_MAGIC, KNOWN_BLOCK_TYPES, FILE_SIZE_LIMIT, WORKING_BLOCK_SIZE, SIZE_ENDIANNESS, \
-    SIZE_VALUE_LENGTH, AES_KEY_LENGTH_BYTES
+    SIZE_VALUE_LENGTH, AES_KEY_LENGTH_BYTES, CHUNK_SIZE_LENGTH, MAXIMUM_CHUNK_SIZE, CHUNKED_BLOCK_SIZE_VALUE
 
 
 class Encryptor:
@@ -51,6 +51,7 @@ class Encryptor:
         # Generate the hash for the given public key.
         self.public_key_hash = hashlib.sha3_512(self.public_key.public_bytes(
             encoding=Encoding.DER, format=PublicFormat.SubjectPublicKeyInfo)).digest()
+        self._chunked_buffer = bytearray()  # A buffer to write chunked data more efficient.
 
     def _write_with_digest(self, data: bytes):
         """
@@ -85,6 +86,20 @@ class Encryptor:
         size_data = len(data).to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False)
         self._write_with_digest(size_data)
         self._write_with_digest(data)
+
+    def _write_chunked_block_header(self, block_type: bytes):
+        """
+        Write the header for a chunked block.
+
+        :param block_type: The block type.
+        """
+        if len(block_type) != 4:
+            raise ValueError('Block type must be 4 bytes')
+        if block_type != b'DATA':
+            raise ValueError('Only `DATA` blocks can use the chunked data format.')
+        self._write_with_digest(block_type)
+        size_data = CHUNKED_BLOCK_SIZE_VALUE.to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False)
+        self._write_with_digest(size_data)
 
     def _write_configuration(self):
         """
@@ -220,6 +235,38 @@ class Encryptor:
         # Write the hash of the original data.
         self._write_encrypted_block(b'DTHA', block_hash_context.digest())
 
+    def _write_data_chunk(self, data: bytes):
+        """
+        Write a single data chunk to the target stream
+
+        :param data: The data to write.
+        """
+        self._write_with_digest(len(data).to_bytes(CHUNK_SIZE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
+        if data:
+            self._write_with_digest(data)
+
+    def _write_chunked_data(self, data: bytes):
+        """
+        Write data in chunked format.
+
+        :param data: The data block to write in the chunked format.
+        """
+        if not data:
+            return
+        self._chunked_buffer.extend(data)
+        if len(self._chunked_buffer) >= MAXIMUM_CHUNK_SIZE:
+            self._write_data_chunk(self._chunked_buffer[:MAXIMUM_CHUNK_SIZE])
+            del self._chunked_buffer[:MAXIMUM_CHUNK_SIZE]
+
+    def _flush_chunked_data(self):
+        """
+        Make sure any remaining chunked data is written.
+        """
+        if len(self._chunked_buffer) > 0:
+            self._write_data_chunk(self._chunked_buffer)
+        self._write_data_chunk(bytes())
+        self._chunked_buffer.clear()
+
     def _stream_data(self, source_file_handle: io.BufferedIOBase):
         """
         Stream the encrypted data to the target stream.
@@ -237,36 +284,30 @@ class Encryptor:
             self._write_encrypted_block(b'DTHA', hashlib.sha3_512(block).digest())
             return
         encryptor, iv = self._prepare_encryption()
-        self._write_with_digest(b'DATA')  # Write the block type.
-        data_size_position = self.destination_file_handle.tell()
-        self._write_with_digest(bytes(SIZE_VALUE_LENGTH * 2))  # Write dummy sizes.
-        final_block_size = SIZE_VALUE_LENGTH
+        self._write_chunked_block_header(b'DATA')
         # Write the IV
-        self._write_with_digest(iv)
-        final_block_size += len(iv)
-        # Encrypt and write the actual data.
-        original_data_size = 0
-        block_hash_context = hashlib.sha3_512()
+        self._write_chunked_data(iv)
         # Encrypt the first block
+        block_hash_context = hashlib.sha3_512()
         block_hash_context.update(block)
-        original_data_size += len(block)
-        self._write_with_digest(encryptor.update(block))
-        final_block_size += len(block)
+        self._write_chunked_data(encryptor.update(block))
         # Encrypt all following blocks
+        last_block = b''
         while block := source_file_handle.read(WORKING_BLOCK_SIZE):
+            if last_block:
+                self._write_chunked_data(encryptor.update(last_block))
             block_hash_context.update(block)
-            block_size = len(block)
-            original_data_size += block_size
-            if block_size < WORKING_BLOCK_SIZE:  # Fill with random padding.
-                block += os.urandom(AES_BLOCK_SIZE_BYTES - (block_size % AES_BLOCK_SIZE_BYTES))
-            self._write_with_digest(encryptor.update(block))
-            final_block_size += len(block)
-        # Jump back to fix the size values.
-        end_of_block_position = self.destination_file_handle.tell()
-        self.destination_file_handle.seek(data_size_position)
-        self._write_with_digest(final_block_size.to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
-        self._write_with_digest(original_data_size.to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
-        self.destination_file_handle.seek(end_of_block_position)
+            last_block = block
+        # At this point, we always get the last read block which was not encrypted yet.
+        # Always apply ISO/IEC 9797-1 padding method 2 to the last block (even it is empty)
+        last_block += b'\x80'
+        misalignment = len(last_block) % AES_BLOCK_SIZE_BYTES
+        if misalignment:
+            last_block += bytes(AES_BLOCK_SIZE_BYTES - misalignment)
+        self._write_chunked_data(encryptor.update(last_block))
+        self._write_chunked_data(encryptor.finalize())
+        # End the chunked data stream
+        self._flush_chunked_data()
         # Write the hash of the original data.
         self._write_encrypted_block(b'DTHA', block_hash_context.digest())
 
@@ -281,17 +322,6 @@ class Encryptor:
         self.destination_file_handle.write(file_digest)
         self.destination_file_handle.flush()
 
-    def _write_end_of_stream(self):
-        """
-        Write the end mark without file hash.
-        """
-        self.destination_file_handle.write(b'ENDS')
-        data = bytes(64)
-        self.destination_file_handle.write(
-            len(data).to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
-        self.destination_file_handle.write(data)
-        self.destination_file_handle.flush()
-
     def _clean_up(self):
         """
         Remove information not needed after encryption.
@@ -299,6 +329,7 @@ class Encryptor:
         self.destination_file_handle = None
         self.destination_file_digest = None
         self.algorithm = None
+        self._chunked_buffer.clear()
 
     @staticmethod
     def _verify_metadata(meta: Dict[str, Any]):
@@ -422,10 +453,10 @@ class Encryptor:
         if not destination_io.seekable():
             raise ValueError('The destination stream has to be seekable.')
         self._verify_metadata(meta)
-        self.destination_file_digest = None
+        self.destination_file_digest = hashlib.sha3_512()
         self.destination_file_handle = destination_io
         self._write_file_header()
         self._write_meta_data(meta)
         self._stream_data(source_io)
-        self._write_end_of_stream()
+        self._write_end_with_hash()
         self._clean_up()
