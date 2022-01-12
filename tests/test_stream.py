@@ -138,3 +138,12 @@ class TestStream:
             with pytest.raises(ffe.IntegrityError):
                 decryptor.copy_decrypted(source=file_path, destination=decrypted_file)
             file_path.unlink(missing_ok=True)
+
+    def test_stream_decryption(self, private_key, data_dir, tmp_path):
+        decryptor = ffe.Decryptor(private_key=private_key)
+        random_file = data_dir / '8k-random.ffe'
+        original_data = data_dir / '8k-random.data'
+        decrypted_file = tmp_path / 'decrypted.data'
+        with random_file.open('rb') as source_io, decrypted_file.open('wb') as destination_io:
+            decryptor.stream_decrypted(source_io, destination_io)
+        assert original_data.read_bytes() == decrypted_file.read_bytes()

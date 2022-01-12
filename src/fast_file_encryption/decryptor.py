@@ -496,6 +496,30 @@ class Decryptor:
         # At this point the decrypted data has its final length. Return the digest.
         return block_hash_context.digest()
 
+    def _decrypt_stream(self, source_io: io.BufferedIOBase, destination_io: io.BufferedIOBase):
+        """
+        Decrypt a file from a source stream and write the decrypted data into the target stream.
+
+        :param source_io: The source stream to use for decryption.
+        :param destination_io: The destination stream to write the decrypted data into
+        """
+        self.source_file_handle = source_io
+        self._read_and_verify_file_header()
+        self._skip_block(b'META')
+        self._skip_block(b'MDHA')
+        block_type, encrypted_block_size = self._read_block_header()
+        if block_type != b'DATA':
+            raise IntegrityError('Expected `DATA` block, but found another one.')
+        if encrypted_block_size == CHUNKED_BLOCK_SIZE_VALUE:
+            data_digest = self._decrypt_chunked_block(destination_io)
+        elif encrypted_block_size >= MAXIMUM_BLOCK_SIZE_VALUE:
+            raise IntegrityError('The block has an invalid size value.')
+        else:
+            data_digest = self._decrypt_static_block(encrypted_block_size, destination_io)
+        file_digest = self._read_encrypted_block(b'DTHA')
+        if file_digest != data_digest:
+            raise IntegrityError('The digest of the data block does not match.')
+
     def copy_decrypted(self, source: Path, destination: Path):
         """
         Copy a encrypted file decrypted at the destination.
@@ -504,25 +528,39 @@ class Decryptor:
         :param destination: The path to the unencrypted destination file.
         :raises IntegrityError: On any file integrity problem.
         """
+        if not source:
+            raise ValueError('Missing parameter `source`')
+        if not destination:
+            raise ValueError('Missing parameter `destination`')
+        if not isinstance(source, Path):
+            raise ValueError('Parameter `source` has to be a `Path` from `pathlib`.')
+        if not isinstance(destination, Path):
+            raise ValueError('Parameter `destination` has to be a `Path` from `pathlib`.')
         if (file_size := source.stat().st_size) < 256:
             raise IntegrityError(f'File is too short to be valid. (size={file_size})')
-        with source.open('rb') as source_io, destination.open('wb') as destination_io:
-            self.source_file_handle = source_io
-            self._read_and_verify_file_header()
-            self._skip_block(b'META')
-            self._skip_block(b'MDHA')
-            block_type, encrypted_block_size = self._read_block_header()
-            if block_type != b'DATA':
-                raise IntegrityError('Expected `DATA` block, but found another one.')
-            if encrypted_block_size == CHUNKED_BLOCK_SIZE_VALUE:
-                data_digest = self._decrypt_chunked_block(destination_io)
-            elif encrypted_block_size >= MAXIMUM_BLOCK_SIZE_VALUE:
-                raise IntegrityError('The block has an invalid size value.')
-            else:
-                data_digest = self._decrypt_static_block(encrypted_block_size, destination_io)
-            file_digest = self._read_encrypted_block(b'DTHA')
-        if file_digest != data_digest:
-            # Delete the corrupted file.
-            destination.unlink()
-            raise IntegrityError('The digest of the data block does not match.')
-        # Successfully decrypted the file.
+        try:
+            with source.open('rb') as source_io, destination.open('wb') as destination_io:
+                self._decrypt_stream(source_io, destination_io)
+        except IntegrityError:
+            destination.unlink(missing_ok=True)
+            raise
+
+    def stream_decrypted(self, source_io: io.BufferedIOBase, destination_io: io.BufferedIOBase):
+        """
+        Decrypt the data from the source stream and write it to the destination stream.
+
+        Both streams have to be open and need to be readable/writable. The implementation only
+        uses the `read` method on the source stream and the `write` method on the destination stream.
+
+        :param source_io: The open source stream.
+        :param destination_io: The open destination stream.
+        """
+        if not source_io:
+            raise ValueError('Missing parameter `source_io`')
+        if not destination_io:
+            raise ValueError('Missing parameter `destination_io`')
+        if not isinstance(source_io, io.BufferedIOBase):
+            raise ValueError('The parameter `source_io` has to be a subclass of `io.BufferedIOBase`')
+        if not isinstance(destination_io, io.BufferedIOBase):
+            raise ValueError('The parameter `destination_io` has to be a subclass of `io.BufferedIOBase`')
+        self._decrypt_stream(source_io, destination_io)
