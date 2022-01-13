@@ -400,12 +400,12 @@ class Encryptor:
 
         :param source: The path to the source file.
         :param destination: The path to the destination file.
-            Use the suffix `.fonfenc` to the target files for best compatibility.
+            Use the suffix `.ffe` for files encrypted with this library.
         :param meta: A dictionary with metadata for this file.
         :param add_source_metadata: Include the metadata for the given source file.
             This includes the fields `file_path`, `file_name`, `file_size`, `created`, `modified`.
             Only missing fields are added to the metadata.
-        :raises DataTooLargeError: If the source file exceeds the maximum file size limit of 1 TB.
+        :raises DataTooLargeError: If the source file exceeds the maximum file size limit of 10 TB.
         """
         if not isinstance(source, Path):
             raise ValueError('`source` has to be a `Path` from pathlib.')
@@ -434,9 +434,7 @@ class Encryptor:
         Read data from a stream and write it encrypted into another stream.
 
         For short streams, smaller than `WORKING_BLOCK_SIZE` this will write the destination stream
-        on the fly. Larger streams will write some dummy data block header, encrypt all the data from the
-        source stream, but then **seek** back to the data block start to write the correctly original
-        and encrypted sizes.
+        on the fly. Larger streams will write be written in a chunked data format.
 
         :param source_io: The **open** source stream, compatible with io.BufferedIOBase.
         :param destination_io: The **open** destination stream, compatible with io.BufferedIOBase.

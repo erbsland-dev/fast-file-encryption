@@ -522,10 +522,10 @@ class Decryptor:
 
     def copy_decrypted(self, source: Path, destination: Path):
         """
-        Copy a encrypted file decrypted at the destination.
+        Copy an encrypted file decrypted at the destination.
 
         :param source: The path to the encrypted source file.
-        :param destination: The path to the unencrypted destination file.
+        :param destination: The path to the decrypted destination file.
         :raises IntegrityError: On any file integrity problem.
         """
         if not source:
