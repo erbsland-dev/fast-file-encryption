@@ -11,29 +11,25 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+from pathlib import Path
 
 try:
     import sphinx_rtd_theme
 except ImportError:
     sphinx_rtd_theme = None
 
+# -- Execute the _about package ----------------------------------------------
+
+base_dir = Path(__file__).parent.parent
+about = {}
+exec((base_dir / 'src' / 'fast_file_encryption' / '_about.py').read_text(), about)
+
 # -- Project information -----------------------------------------------------
 
 project = 'Fast File Encryption'
-copyright = '2021-2022, Tobias Erbsland / EducateIT GmbH'
-author = 'Tobias Erbsland'
-
-# The version info for the project you're documenting, acts as replacement for
-# |version| and |release|, also used in various other places throughout the
-# built documents.
-#
-
-base_dir = os.path.join(os.path.dirname(__file__), os.pardir)
-about = {}
-with open(os.path.join(base_dir, "src", "fast_file_encryption", "__about__.py")) as f:
-    exec(f.read(), about)
-
-version = release = about["__version__"]
+copyright = about['COPYRIGHT']
+author = about['AUTHOR']
+version = release = about['VERSION']
 
 # -- General configuration ---------------------------------------------------
 

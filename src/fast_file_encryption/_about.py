@@ -14,12 +14,11 @@
 
 
 __all__ = [
-    '__version__',
-    '__author__',
-    '__copyright__',
+    'VERSION',
+    'AUTHOR',
+    'COPYRIGHT',
 ]
 
-__version__ = '1.2.2'
-
-__author__ = 'Tobias Erbsland'
-__copyright__ = f'Copyright 2021-2022 Tobias Erbsland / EducateIT GmbH'
+VERSION = '1.2.3'
+AUTHOR = 'Tobias Erbsland'
+COPYRIGHT = f'2021-2022, Tobias Erbsland / EducateIT GmbH'
