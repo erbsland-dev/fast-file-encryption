@@ -147,3 +147,57 @@ class TestStream:
         with random_file.open('rb') as source_io, decrypted_file.open('wb') as destination_io:
             decryptor.stream_decrypted(source_io, destination_io)
         assert original_data.read_bytes() == decrypted_file.read_bytes()
+
+    def test_stream_features(self, public_key, private_key, data_dir, tmp_path):
+        class MinimalReader(io.BufferedIOBase):
+            def __init__(self):
+                self.buffer = bytes()
+
+            def writable(self) -> bool:
+                return False
+
+            def readable(self) -> bool:
+                return True
+
+            def seekable(self) -> bool:
+                return False
+
+            def read(self, size: int) -> bytes:
+                if not self.buffer:
+                    return b''
+                b = min(size, len(self.buffer))
+                result = bytes(self.buffer[:b])
+                del self.buffer[:b]
+                return result
+
+            def read1(self, size: int) -> bytes:
+                return self.read(size)
+
+        class MinimalWriter(io.BufferedIOBase):
+            def __init__(self):
+                self.buffer = bytearray()
+
+            def writable(self) -> bool:
+                return True
+
+            def readable(self) -> bool:
+                return False
+
+            def seekable(self) -> bool:
+                return False
+
+            def write(self, buffer: bytes) -> int:
+                self.buffer.extend(buffer)
+                return len(buffer)
+
+        encryptor = ffe.Encryptor(public_key)
+        decryptor = ffe.Decryptor(private_key)
+        original_data = b'data' + bytes(1_000_000) + b'data'
+        minimal_reader = MinimalReader()
+        minimal_writer = MinimalWriter()
+        minimal_reader.buffer = bytearray(original_data)
+        encryptor.stream_encrypted(source_io=minimal_reader, destination_io=minimal_writer)
+        minimal_reader.buffer = minimal_writer.buffer.copy()
+        minimal_writer.buffer = bytearray()
+        decryptor.stream_decrypted(minimal_reader, minimal_writer)
+        assert original_data == minimal_writer.buffer

@@ -448,8 +448,6 @@ class Encryptor:
             raise ValueError('`destination_io` has to be a subclass of `io.BufferedIOBase`.')
         if not destination_io.writable():
             raise ValueError('The destination stream has to be writeable.')
-        if not destination_io.seekable():
-            raise ValueError('The destination stream has to be seekable.')
         self._verify_metadata(meta)
         self.destination_file_digest = hashlib.sha3_512()
         self.destination_file_handle = destination_io
