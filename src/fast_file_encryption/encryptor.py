@@ -320,7 +320,6 @@ class Encryptor:
         self.destination_file_handle.write(
             len(file_digest).to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
         self.destination_file_handle.write(file_digest)
-        self.destination_file_handle.flush()
 
     def _clean_up(self):
         """

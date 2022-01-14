@@ -190,6 +190,9 @@ class TestStream:
                 self.buffer.extend(buffer)
                 return len(buffer)
 
+            def flush(self) -> None:
+                raise ValueError('Do not use flush.')
+
         encryptor = ffe.Encryptor(public_key)
         decryptor = ffe.Decryptor(private_key)
         original_data = b'data' + bytes(1_000_000) + b'data'
