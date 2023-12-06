@@ -364,7 +364,7 @@ class Encryptor:
         if 'file_size' not in meta:
             meta['file_size'] = source.stat().st_size
         if 'created' not in meta:
-            meta['created'] = datetime.utcfromtimestamp(source.stat().st_birthtime).isoformat()
+            meta['created'] = datetime.utcfromtimestamp(source.stat().st_ctime).isoformat()
         if 'modified' not in meta:
             meta['modified'] = datetime.utcfromtimestamp(source.stat().st_mtime).isoformat()
         return meta
