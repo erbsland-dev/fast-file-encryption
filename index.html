@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Fast File Encryption &mdash; Fast File Encryption 1.2.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=010db75e"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Encrypting Data" href="encryptor.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            Fast File Encryption
+          </a>
+              <div class="version">
+                1.2.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="encryptor.html">Encrypting Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decryptor.html">Decrypting Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">Exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About the Library</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design and Goals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="format.html">The File Format</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Fast File Encryption</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Welcome to Fast File Encryption</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="welcome-to-fast-file-encryption">
+<h1>Welcome to Fast File Encryption<a class="headerlink" href="#welcome-to-fast-file-encryption" title="Link to this heading">¶</a></h1>
+<p>The <em>Fast File Encryption</em> is an open, very simple and well-designed file encryption solution for medium and large
+files (up to terabytes). It uses asymmetric RSA keys to encrypt and decrypt the files, in order to store the public key
+for encryption on the server, with no worries.</p>
+<section id="quickstart">
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading">¶</a></h2>
+<p>Create a new key pair:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fast_file_encryption</span> <span class="k">as</span> <span class="nn">ffe</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ffe</span><span class="o">.</span><span class="n">save_key_pair</span><span class="p">(</span><span class="n">public_key</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;public.pem&#39;</span><span class="p">),</span> <span class="n">private_key</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;private.pem&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Encrypt a file:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">original_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;original_file.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">original_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s1">&#39;Hello world!&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encryptor</span> <span class="o">=</span> <span class="n">ffe</span><span class="o">.</span><span class="n">Encryptor</span><span class="p">(</span><span class="n">ffe</span><span class="o">.</span><span class="n">read_public_key</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;public.pem&#39;</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encrypted_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;encrypted_file.ffe&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encryptor</span><span class="o">.</span><span class="n">copy_encrypted</span><span class="p">(</span><span class="n">original_file</span><span class="p">,</span> <span class="n">encrypted_file</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;my-meta&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="n">add_source_metadata</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Decrypt a file and read its meta data:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">decryptor</span> <span class="o">=</span> <span class="n">ffe</span><span class="o">.</span><span class="n">Decryptor</span><span class="p">(</span><span class="n">ffe</span><span class="o">.</span><span class="n">read_private_key</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;private.pem&#39;</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">decryptor</span><span class="o">.</span><span class="n">load_decrypted</span><span class="p">(</span><span class="n">encrypted_file</span><span class="p">)</span>
+<span class="go">b&#39;Hello world!&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">decryptor</span><span class="o">.</span><span class="n">read_metadata</span><span class="p">(</span><span class="n">encrypted_file</span><span class="p">)</span>
+<span class="go">{&#39;my-meta&#39;: 1, &#39;file_path&#39;: &#39;.../original_file.txt&#39;, ...}</span>
+</pre></div>
+</div>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p>Install <em>Fast File Encryption</em> using <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>fast_file_encryption
+</pre></div>
+</div>
+</section>
+<section id="reference-documentation">
+<h2>Reference Documentation<a class="headerlink" href="#reference-documentation" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="encryptor.html">Encrypting Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="encryptor.html#fast_file_encryption.Encryptor"><code class="docutils literal notranslate"><span class="pre">Encryptor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="decryptor.html">Decrypting Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="decryptor.html#fast_file_encryption.Decryptor"><code class="docutils literal notranslate"><span class="pre">Decryptor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">Exceptions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#fast_file_encryption.IntegrityError"><code class="docutils literal notranslate"><span class="pre">IntegrityError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#fast_file_encryption.DataTooLargeError"><code class="docutils literal notranslate"><span class="pre">DataTooLargeError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tools.html#fast_file_encryption.read_public_key"><code class="docutils literal notranslate"><span class="pre">read_public_key()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="tools.html#fast_file_encryption.read_private_key"><code class="docutils literal notranslate"><span class="pre">read_private_key()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">About the Library</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design and Goals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="design.html#use-cases-for-the-design">Use Cases for the Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design.html#goals">Goals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design.html#non-goals">Non-Goals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design.html#used-algorithms-and-hashes">Used Algorithms and Hashes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design.html#file-sizes">File Sizes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="format.html">The File Format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="format.html#overall-structure">Overall Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="format.html#block-types-and-correct-order">Block Types and Correct Order</a></li>
+<li class="toctree-l2"><a class="reference internal" href="format.html#encrypted-data-block-format">Encrypted Data Block Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="format.html#metadata-format">Metadata Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="format.html#predefined-metadata-fields">Predefined Metadata Fields</a></li>
+<li class="toctree-l2"><a class="reference internal" href="format.html#error-handling-on-decoding">Error Handling on Decoding</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="encryptor.html" class="btn btn-neutral float-right" title="Encrypting Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2024, Tobias Erbsland and EducateIT GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decrypting Data &mdash; Fast File Encryption 1.2.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=010db75e"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Exceptions" href="errors.html" />
+    <link rel="prev" title="Encrypting Data" href="encryptor.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Fast File Encryption
+          </a>
+              <div class="version">
+                1.2.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="encryptor.html">Encrypting Data</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Decrypting Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#fast_file_encryption.Decryptor"><code class="docutils literal notranslate"><span class="pre">Decryptor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fast_file_encryption.Decryptor.read_metadata"><code class="docutils literal notranslate"><span class="pre">Decryptor.read_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fast_file_encryption.Decryptor.load_decrypted"><code class="docutils literal notranslate"><span class="pre">Decryptor.load_decrypted()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fast_file_encryption.Decryptor.stream_decrypted"><code class="docutils literal notranslate"><span class="pre">Decryptor.stream_decrypted()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">Exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About the Library</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design and Goals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="format.html">The File Format</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Fast File Encryption</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Decrypting Data</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/decryptor.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="decrypting-data">
+<h1>Decrypting Data<a class="headerlink" href="#decrypting-data" title="Link to this heading">¶</a></h1>
+<p>Decrypting data requires the matching <em>private key</em> of the public key which was used to encrypt the data. You can load and decrypt a file into a <cite>bytes</cite> object, copy the decrypted data into a new file or decrypt data from a data stream into another.</p>
+<p>The following example shows how to decrypt a file and read its metadata:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">fast_file_encryption</span> <span class="k">as</span> <span class="nn">ffe</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encrypted_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;encrypted_file.ffe&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">decryptor</span> <span class="o">=</span> <span class="n">ffe</span><span class="o">.</span><span class="n">Decryptor</span><span class="p">(</span><span class="n">ffe</span><span class="o">.</span><span class="n">read_private_key</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;private.pem&#39;</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">decryptor</span><span class="o">.</span><span class="n">load_decrypted</span><span class="p">(</span><span class="n">encrypted_file</span><span class="p">)</span>
+<span class="go">b&#39;Hello world!&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">decryptor</span><span class="o">.</span><span class="n">read_metadata</span><span class="p">(</span><span class="n">encrypted_file</span><span class="p">)</span>
+<span class="go">{&#39;my-meta&#39;: 1, &#39;file_path&#39;: &#39;.../original_file.txt&#39;, ...}</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="fast_file_encryption.Decryptor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fast_file_encryption.</span></span><span class="sig-name descname"><span class="pre">Decryptor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">private_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fast_file_encryption.Decryptor" title="Link to this definition">¶</a></dt>
+<dd><p>The decryptor provides all required methods to decrypt data, files and streams.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>private_key</strong> (<cite>RSAPrivateKey</cite>) – The private key to use for the decryption.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="fast_file_encryption.Decryptor.read_metadata">
+<span class="sig-name descname"><span class="pre">read_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fast_file_encryption.Decryptor.read_metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Only decrypt and read the metadata from a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>source</strong> (<em>pathlib.Path</em>) – The file to read the metadata.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The dictionary with the metadata.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fast_file_encryption.Decryptor.load_decrypted">
+<span class="sig-name descname"><span class="pre">load_decrypted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10_000_000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fast_file_encryption.Decryptor.load_decrypted" title="Link to this definition">¶</a></dt>
+<dd><p>Load and decrypt the given source file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>pathlib.Path</em>) – Load and decrypt the given source file.</p></li>
+<li><p><strong>maximum_size</strong> (<em>int</em>) – The maximum size of the decrypted data. This is no exact limit, because it is tested using the size of the encrypted data. The returned data may be up to 127 bytes larger than the given limit. Defaults to 10_000_000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The decrypted data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bytes</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="errors.html#fast_file_encryption.DataTooLargeError" title="fast_file_encryption.DataTooLargeError"><strong>DataTooLargeError</strong></a> – If the maximum size would be exceeded.</p></li>
+<li><p><a class="reference internal" href="errors.html#fast_file_encryption.IntegrityError" title="fast_file_encryption.IntegrityError"><strong>IntegrityError</strong></a> – On any file integrity problem.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">copy_decrypted(self,</span> <span class="pre">source,</span> <span class="pre">destination):</span></span></dt>
+<dd><p>Copy an decrypt the <cite>source</cite> file to the given <cite>destination</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>pathlib.Path</em>) – The path to the encrypted source file.</p></li>
+<li><p><strong>destination</strong> (<em>pathlib.Path</em>) – The path to the decrypted destination file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="errors.html#fast_file_encryption.IntegrityError" title="fast_file_encryption.IntegrityError"><strong>IntegrityError</strong></a> – On any file integrity problem.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fast_file_encryption.Decryptor.stream_decrypted">
+<span class="sig-name descname"><span class="pre">stream_decrypted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_io</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_io</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fast_file_encryption.Decryptor.stream_decrypted" title="Link to this definition">¶</a></dt>
+<dd><p>Decrypt the data from the source stream and write it to the destination stream.</p>
+<p>Both streams have to be open and need to be readable/writable. The implementation only
+uses the <cite>read</cite> method on the source stream and the <cite>write</cite> method on the destination stream.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_io</strong> (<em>io.BufferedIOBase</em>) – The open source stream.</p></li>
+<li><p><strong>destination_io</strong> (<em>io.BufferedIOBase</em>) – The open destination stream.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="errors.html#fast_file_encryption.IntegrityError" title="fast_file_encryption.IntegrityError"><strong>IntegrityError</strong></a> – On any file integrity problem.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="encryptor.html" class="btn btn-neutral float-left" title="Encrypting Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="errors.html" class="btn btn-neutral float-right" title="Exceptions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2024, Tobias Erbsland and EducateIT GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

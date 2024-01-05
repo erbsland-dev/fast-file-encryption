@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The File Format &mdash; Fast File Encryption 1.2.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=010db75e"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Design and Goals" href="design.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Fast File Encryption
+          </a>
+              <div class="version">
+                1.2.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="encryptor.html">Encrypting Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decryptor.html">Decrypting Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">Exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About the Library</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design and Goals</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The File Format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overall-structure">Overall Structure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#static-blocks">Static Blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chunked-blocks">Chunked Blocks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#block-types-and-correct-order">Block Types and Correct Order</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#conf-encryption-configuration-maximum-size-128-bytes"><code class="docutils literal notranslate"><span class="pre">CONF</span></code> Encryption configuration (maximum size 128 bytes)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#epub-encryption-key-hash-maximum-size-1k"><code class="docutils literal notranslate"><span class="pre">EPUB</span></code> Encryption Key Hash (maximum size 1k)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#esym-encrypted-symmetric-key-maximum-size-1k"><code class="docutils literal notranslate"><span class="pre">ESYM</span></code> Encrypted Symmetric Key (maximum size 1k)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#meta-encrypted-metadata-maximum-size-10k"><code class="docutils literal notranslate"><span class="pre">META</span></code> Encrypted metadata (maximum size 10k)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mdha-hash-for-metadata-maximum-size-1k"><code class="docutils literal notranslate"><span class="pre">MDHA</span></code> Hash for metadata (maximum size 1k)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-encrypted-file-data-no-maximum-size"><code class="docutils literal notranslate"><span class="pre">DATA</span></code> Encrypted file data (no maximum size)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dtha-hash-for-the-decrypted-data"><code class="docutils literal notranslate"><span class="pre">DTHA</span></code> Hash for the decrypted data.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#endh-end-of-file-with-hash"><code class="docutils literal notranslate"><span class="pre">ENDH</span></code> = End of file with hash</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#block-order">Block Order</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#encrypted-data-block-format">Encrypted Data Block Format</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Static Blocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#streamed-blocks">Streamed Blocks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#metadata-format">Metadata Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#predefined-metadata-fields">Predefined Metadata Fields</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#error-handling-on-decoding">Error Handling on Decoding</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Fast File Encryption</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">The File Format</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/format.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="the-file-format">
+<h1>The File Format<a class="headerlink" href="#the-file-format" title="Link to this heading">¶</a></h1>
+<p>The file format is block oriented, similar like common image formats (e.g. PNG). It uses a magic header, and blocks with
+a four byte identifier and 64bit size field. Blocks can have a static size, or use a “chunked format” where the size is
+determined by following a sequence of smaller “data-chunks”.</p>
+<p>This modular framework would allow to randomly add and mix different blocks and types, yet this format is very strict.
+Not only the number of blocks is defined, also the exact sequence of block is fixed and must not be changed. Using a
+strict format is speeding up verification and processing of the data. Also, it reduced risks of attacks using
+manipulated files.</p>
+<section id="overall-structure">
+<h2>Overall Structure<a class="headerlink" href="#overall-structure" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>8 bytes with magic <code class="docutils literal notranslate"><span class="pre">0xfe</span></code>, <code class="docutils literal notranslate"><span class="pre">FFE</span></code>, <code class="docutils literal notranslate"><span class="pre">0x0d</span></code>, <code class="docutils literal notranslate"><span class="pre">0x0a</span></code>, <code class="docutils literal notranslate"><span class="pre">0x1a</span></code>, <code class="docutils literal notranslate"><span class="pre">0x0a</span></code></p></li>
+<li><p>n blocks with the following format:</p></li>
+</ul>
+<section id="static-blocks">
+<h3>Static Blocks<a class="headerlink" href="#static-blocks" title="Link to this heading">¶</a></h3>
+<p>Static blocks are the default to efficiently read and write data from random accessible media:</p>
+<ul class="simple">
+<li><p>4 bytes with the block type.</p></li>
+<li><p>8 bytes with the size of the block. Big-endian, unsigned, 64-bit. A zero value indicates an empty block. No data bytes
+will follow a such block. The size value has to be less than 0xffff_0000_0000_0000.</p></li>
+<li><p>n bytes with the data of the block.</p></li>
+</ul>
+<p>Size values equal or greater than 0xffff_0000_0000_0000 are reserved for extensions of the format and therefore invalid
+regular size values.</p>
+</section>
+<section id="chunked-blocks">
+<h3>Chunked Blocks<a class="headerlink" href="#chunked-blocks" title="Link to this heading">¶</a></h3>
+<p>To allow encrypting large streams, there is an alternative chunked data format. This format uses the value
+<code class="docutils literal notranslate"><span class="pre">0xffff800000000000</span></code> as the size of the block, to indicate the data size is defined by chunks. The data of the block
+consists of a sequence of chunks, each prefixed with a 16-bit size and the corresponding number of bytes. A size value
+of zero indicates the end of the sequence.</p>
+<p>This format is currently only allowed for the <code class="docutils literal notranslate"><span class="pre">DATA</span></code> block.</p>
+<ul class="simple">
+<li><p>4 bytes with the block type. (<code class="docutils literal notranslate"><span class="pre">DATA</span></code>)</p></li>
+<li><p>8 bytes indicating the stream format. Value == <code class="docutils literal notranslate"><span class="pre">0xffff800000000000</span></code></p></li>
+<li><dl class="simple">
+<dt>n data chunks with the following format:</dt><dd><ul>
+<li><p>2 bytes with the size of the data chunk. Big-endian, unsigned, 16-bit. Value 0 means: end of stream.</p></li>
+<li><p>n bytes as specified with the data chunk size.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>The chunks <em>shall</em> make use of a maximum size of 0xffff bytes for all except the last block. The decryptor <em>may</em>
+check if this is the case and reject files with random chunk sizes.</p>
+</section>
+</section>
+<section id="block-types-and-correct-order">
+<h2>Block Types and Correct Order<a class="headerlink" href="#block-types-and-correct-order" title="Link to this heading">¶</a></h2>
+<section id="conf-encryption-configuration-maximum-size-128-bytes">
+<h3><code class="docutils literal notranslate"><span class="pre">CONF</span></code> Encryption configuration (maximum size 128 bytes)<a class="headerlink" href="#conf-encryption-configuration-maximum-size-128-bytes" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">k:RSA-4096,e:AES-256,b:CBC,h:SHA3-512,v:1</span></code></p>
+<p>Comma separated fields “&lt;key&gt;:&lt;value&gt;”. The result must be ASCII encoded and only contain the following limited range of
+characters (regular expression): <code class="docutils literal notranslate"><span class="pre">[-_,:A-Za-z0-9]+</span></code></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">k</span></code> key algorithm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">e</span></code> encryption algorithm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">b</span></code> block algorithm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">h</span></code> hash algorithm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">v</span></code> file format version</p></li>
+</ul>
+<p>There is no need to allow other algorithms. If the configuration does not match exactly the shown string, it is safe to
+stop decoding with an error.</p>
+<p>This string is part of the file format to describe the used algorithms in a format which can be read and understand by
+humans. It shall allow to reconstruct the data, if the knowledge of this format get lost, but the keys and files are
+still available.</p>
+</section>
+<section id="epub-encryption-key-hash-maximum-size-1k">
+<h3><code class="docutils literal notranslate"><span class="pre">EPUB</span></code> Encryption Key Hash (maximum size 1k)<a class="headerlink" href="#epub-encryption-key-hash-maximum-size-1k" title="Link to this heading">¶</a></h3>
+<p>The hash for the used public key to encrypt the symmetric key. This hash is generated by using a SHA3-512 hash on the
+DER encoded public key in SubjectPublicKeyInfo format.</p>
+<p>This block allows a quick verification which key was used to encrypt the file, without trial-and-error. The hash itself
+is required for the decryption process.</p>
+</section>
+<section id="esym-encrypted-symmetric-key-maximum-size-1k">
+<h3><code class="docutils literal notranslate"><span class="pre">ESYM</span></code> Encrypted Symmetric Key (maximum size 1k)<a class="headerlink" href="#esym-encrypted-symmetric-key-maximum-size-1k" title="Link to this heading">¶</a></h3>
+<p>For RSA-4096: The symmetric key is encrypted using OAEP padding, with the given hash size and no label.</p>
+<p>This block is the key for the asymmetric encryption of the data. The 16 bytes of the AES-256 key are encrypted using the
+public RSA key. This is done using the <em>optimal asymmetric encryption padding</em> for RSA, also called RSA-OAEP and
+standardized in PKCS#1 und RFC 3447. The hash used in this encryption is SHA256, the mask function is MFG1.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">encryption_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="n">AES_KEY_LENGTH_BYTES</span><span class="p">)</span>
+<span class="n">encrypted_encryption_key</span> <span class="o">=</span> <span class="n">public_key</span><span class="o">.</span><span class="n">encrypt</span><span class="p">(</span>
+    <span class="n">encryption_key</span><span class="p">,</span>
+    <span class="n">OAEP</span><span class="p">(</span>
+        <span class="n">mgf</span><span class="o">=</span><span class="n">MGF1</span><span class="p">(</span><span class="n">algorithm</span><span class="o">=</span><span class="n">hashes</span><span class="o">.</span><span class="n">SHA256</span><span class="p">()),</span>
+        <span class="n">algorithm</span><span class="o">=</span><span class="n">hashes</span><span class="o">.</span><span class="n">SHA256</span><span class="p">(),</span>
+        <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>All encrypted blocks in the file are encrypted using this AES-256 key, but with different initialization vectors. See
+section “Encrypted File Format” for all details.</p>
+</section>
+<section id="meta-encrypted-metadata-maximum-size-10k">
+<h3><code class="docutils literal notranslate"><span class="pre">META</span></code> Encrypted metadata (maximum size 10k)<a class="headerlink" href="#meta-encrypted-metadata-maximum-size-10k" title="Link to this heading">¶</a></h3>
+<p>The block with the encrypted metadata. If no metadata is given, this block and the hash block is empty.</p>
+<p>See section “Metadata Format” for all details.</p>
+</section>
+<section id="mdha-hash-for-metadata-maximum-size-1k">
+<h3><code class="docutils literal notranslate"><span class="pre">MDHA</span></code> Hash for metadata (maximum size 1k)<a class="headerlink" href="#mdha-hash-for-metadata-maximum-size-1k" title="Link to this heading">¶</a></h3>
+<p>The hash for the decrypted metadata. Encrypted.</p>
+</section>
+<section id="data-encrypted-file-data-no-maximum-size">
+<h3><code class="docutils literal notranslate"><span class="pre">DATA</span></code> Encrypted file data (no maximum size)<a class="headerlink" href="#data-encrypted-file-data-no-maximum-size" title="Link to this heading">¶</a></h3>
+<p>The encrypted file data.</p>
+<p>For empty files with a size of zero, this block and the hash block is empty.</p>
+</section>
+<section id="dtha-hash-for-the-decrypted-data">
+<h3><code class="docutils literal notranslate"><span class="pre">DTHA</span></code> Hash for the decrypted data.<a class="headerlink" href="#dtha-hash-for-the-decrypted-data" title="Link to this heading">¶</a></h3>
+<p>The hash for the decrypted file data. Encrypted.</p>
+</section>
+<section id="endh-end-of-file-with-hash">
+<h3><code class="docutils literal notranslate"><span class="pre">ENDH</span></code> = End of file with hash<a class="headerlink" href="#endh-end-of-file-with-hash" title="Link to this heading">¶</a></h3>
+<p>Marks the end of the file and contains a SHA3-512 hash for the whole file, up to this block, without the bytes of the
+block type. The bytes following this block type are therefore always 0x40,0,0,0,0,0,0,0 for a 64 byte sized block,
+followed by the 64 byte hash.</p>
+<p>In order to quickly check the integrity of a file, you can create a digest of the file data up to
+<code class="docutils literal notranslate"><span class="pre">file_size</span> <span class="pre">-</span> <span class="pre">76</span> <span class="pre">bytes</span></code>, then skip 12 bytes, read the next 64 and compare the digest.</p>
+</section>
+<section id="block-order">
+<h3>Block Order<a class="headerlink" href="#block-order" title="Link to this heading">¶</a></h3>
+<p>The blocks must appear in the shown order.</p>
+</section>
+</section>
+<section id="encrypted-data-block-format">
+<h2>Encrypted Data Block Format<a class="headerlink" href="#encrypted-data-block-format" title="Link to this heading">¶</a></h2>
+<section id="id1">
+<h3>Static Blocks<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p>The data format in an encrypted data block:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>8 bytes, big endian, unsigned, with the size of the decrypted data.</dt><dd><ul>
+<li><p>If the encrypted file is empty, the <em>block</em> is empty and this size is not given.</p></li>
+<li><p>If this value is greater than zero, it is the size of the decrypted data in bytes.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>16 bytes (for AES-256/CBC) with the IV for the encryption.</p></li>
+<li><p>The encrypted data, aligned to the cipher block size.</p></li>
+</ul>
+<p>If the encrypted data is empty, this block is empty.</p>
+</section>
+<section id="streamed-blocks">
+<h3>Streamed Blocks<a class="headerlink" href="#streamed-blocks" title="Link to this heading">¶</a></h3>
+<p>As the size of the encrypted data is not known the encryption format for streamed blocks is different.</p>
+<ul class="simple">
+<li><p>16 bytes (for AES-256/CBC) with the IV for the encryption.</p></li>
+<li><p>The encrypted data, padded with ISO/IEC 9797-1 padding method 2.</p></li>
+</ul>
+<p>ISO padding adds the byte 0x80 and fills the last block with zero bytes.</p>
+</section>
+</section>
+<section id="metadata-format">
+<h2>Metadata Format<a class="headerlink" href="#metadata-format" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Each file can contain a custom block with metadata.</p></li>
+<li><p>The metadata is stored as a UTF-8 encoded block in JSON format.</p></li>
+<li><p>The JSON block must be stored compact, without pretty formatting.</p></li>
+<li><p>The JSON block must encode a top level object like this:</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;attribute1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data2&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;attribute2&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data2&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;attribute3&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data3&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>So there has to be an object with attributes (no top-level list, etc.), but the format of the attribute is user
+defined and can contain lists and nested objects.</p></li>
+<li><p>The size of the encrypted metadata must not exceed 100k.</p></li>
+<li><p>Field names only consist of lowercase letters and the underscore character. They must be shorter than 64 characters.</p></li>
+</ul>
+</section>
+<section id="predefined-metadata-fields">
+<h2>Predefined Metadata Fields<a class="headerlink" href="#predefined-metadata-fields" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">file_path</span></code> The original absolute path of the encrypted file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_name</span></code> The original filename of the encrypted file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_size</span></code> The original size of the encrypted file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">created</span></code> The original created UTC date/time in ISO format (yyyy-mm-ddThh:mm:ss)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">modified</span></code> The original modified UTC date/time in ISO format (yyyy-mm-ddThh:mm:ss)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mime_type</span></code> The MIME type of the file contents.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">version</span></code> A version of the file, free format.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">encryptor</span></code> The name of the application which encrypted the file.</p></li>
+</ul>
+</section>
+<section id="error-handling-on-decoding">
+<h2>Error Handling on Decoding<a class="headerlink" href="#error-handling-on-decoding" title="Link to this heading">¶</a></h2>
+<p>If there is a problem, decoding shall simply stop. Do not try recover from the problem.</p>
+<ul class="simple">
+<li><p>If the file is smaller than 256 bytes, it is invalid, stop decoding.</p></li>
+<li><p>If an unknown block type field is read, stop decoding.</p></li>
+<li><p>If an expected block is missing, stop decoding.</p></li>
+<li><p>If the size of the block, exceeds the specified size, stop decoding.</p></li>
+<li><p>If the <code class="docutils literal notranslate"><span class="pre">CONF</span></code> field do not match the exact encryption specification, stop decoding.</p></li>
+<li><p>If the hash does not match the decoded data, stop decoding.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="design.html" class="btn btn-neutral float-left" title="Design and Goals" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2024, Tobias Erbsland and EducateIT GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

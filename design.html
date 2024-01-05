@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design and Goals &mdash; Fast File Encryption 1.2.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=010db75e"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The File Format" href="format.html" />
+    <link rel="prev" title="Tools" href="tools.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Fast File Encryption
+          </a>
+              <div class="version">
+                1.2.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="encryptor.html">Encrypting Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decryptor.html">Decrypting Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">Exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About the Library</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Design and Goals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#use-cases-for-the-design">Use Cases for the Design</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#use-case-crash-reports">Use Case: Crash Reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#use-case-user-data-encryption">Use Case: User Data Encryption</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#goals">Goals</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#archive-data">Archive Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ease-of-use">Ease of Use</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#minimal-dependencies">Minimal Dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#large-files">Large Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#separate-metadata-block">Separate Metadata Block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prevention-of-data-loss-theft-on-breach">Prevention of Data Loss/Theft on Breach</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#protection-from-data-corruption">Protection from Data Corruption</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#non-goals">Non-Goals</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multiple-keys-trust-networks">Multiple Keys / Trust Networks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#protection-from-maliciously-manipulation">Protection from Maliciously Manipulation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#used-algorithms-and-hashes">Used Algorithms and Hashes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#file-sizes">File Sizes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="format.html">The File Format</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Fast File Encryption</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Design and Goals</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/design.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="design-and-goals">
+<h1>Design and Goals<a class="headerlink" href="#design-and-goals" title="Link to this heading">¶</a></h1>
+<section id="use-cases-for-the-design">
+<h2>Use Cases for the Design<a class="headerlink" href="#use-cases-for-the-design" title="Link to this heading">¶</a></h2>
+<section id="use-case-crash-reports">
+<h3>Use Case: Crash Reports<a class="headerlink" href="#use-case-crash-reports" title="Link to this heading">¶</a></h3>
+<p>The initial use for this format was the secure storage of crash reports containing sensitive customer data. Because these crash reports where for performance/availability reasons collected by an internet connected system, any data exposure had to be prevented by design. The crash reports were in some cases large, therefore the encryption had to be done <em>while</em> receiving the files.</p>
+<p>After transferring the crash reports to a server inside the company network, they were decoded using the private key which was stored in the HSM, processed and stored in a database.</p>
+</section>
+<section id="use-case-user-data-encryption">
+<h3>Use Case: User Data Encryption<a class="headerlink" href="#use-case-user-data-encryption" title="Link to this heading">¶</a></h3>
+<p>Another use case is the storage of user related data in a secure way. For each user, an RSA key pair is generated and stored in the HSM attached to the server. The public key is stored in the database of the receiving server. Any userdata is automatically encrypted using the public key, before it is stored at the storage location.</p>
+<p>In case of a breach, the attacker can only copy the encrypted data, but not the private keys which are required to access the data. An offline decryption after a data leak is prevented by this approach. The only way to access the data would be by running own code on the server which is processing the data - which is by definition not impossible, but much harder to do unnoticed.</p>
+<p>Searching or decoding large amounts of random amounts of data on these servers would generate alerts. Slowing down these operations would help to stay unnoticed, but would also be impractical.</p>
+</section>
+</section>
+<section id="goals">
+<h2>Goals<a class="headerlink" href="#goals" title="Link to this heading">¶</a></h2>
+<section id="archive-data">
+<h3>Archive Data<a class="headerlink" href="#archive-data" title="Link to this heading">¶</a></h3>
+<p>This file encryption format was designed to archive/store data in a securely encrypted format on servers where a breach cannot be confidentially excluded. The format allows automatic processes to efficiently encrypt and store received files using a locally stored public key.</p>
+</section>
+<section id="ease-of-use">
+<h3>Ease of Use<a class="headerlink" href="#ease-of-use" title="Link to this heading">¶</a></h3>
+<p>Proper encryption is difficult, so it is if often done wrong. The algorithms for the encryption used in this format are chosen carefully in a way to allow the best protection of the files.</p>
+<p>Intentionally, there are no choices of encryption strength, algorithms, key-sizes and such. This library shall be safe out of the box and allow no accidentally weakening of the encryption.</p>
+<p>In case any problems with the used algorithms are uncovered, the format shall be updated to automatically use the better and improved algorithms while providing backward compatibility for the <em>decryption</em> process.</p>
+</section>
+<section id="minimal-dependencies">
+<h3>Minimal Dependencies<a class="headerlink" href="#minimal-dependencies" title="Link to this heading">¶</a></h3>
+<p>Too many dependencies can be a huge risk. Therefore, this library only depends on <code class="docutils literal notranslate"><span class="pre">cryptography</span></code>, a well established and maintained crypto library based on OpenSSL.</p>
+</section>
+<section id="large-files">
+<h3>Large Files<a class="headerlink" href="#large-files" title="Link to this heading">¶</a></h3>
+<p>The file format is designed in a way, to efficiently encrypt large files, if the size of the source file is known. The order of the blocks is arranged in a way, to allow combining hashing and encryption over the source file, without the need to read the same data twice.</p>
+<p>Encrypting while streaming large amounts of data is also supported. This allows to encrypt data in memory while reading it from e.g. a network source and also stream it to a storage provider.</p>
+</section>
+<section id="separate-metadata-block">
+<h3>Separate Metadata Block<a class="headerlink" href="#separate-metadata-block" title="Link to this heading">¶</a></h3>
+<p>A custom block of metadata allows to store all details of the original file and any important context data. The metadata is stored in a separate block. Therefore, it is possible to quickly extract just the metadata from the file.</p>
+</section>
+<section id="prevention-of-data-loss-theft-on-breach">
+<h3>Prevention of Data Loss/Theft on Breach<a class="headerlink" href="#prevention-of-data-loss-theft-on-breach" title="Link to this heading">¶</a></h3>
+<p>If there is a breach on the encrypting server, the already encrypted files are safe, even the stored public key is copied. The private key to decrypt the data is stored outside the server environment and therefore not accessible for the attacker.</p>
+<p>By including a hash for the encrypting public key, this key can be changed on a time or even file basis. In case of data breaches, where the attacker will create a copy of the data with the goal to obtain the private key with a later attack, this will further limit the exposure. By using a time based rotation scheme, where e.g. every month a new kay pair is generated and older keys are stored in an offline location.</p>
+</section>
+<section id="protection-from-data-corruption">
+<h3>Protection from Data Corruption<a class="headerlink" href="#protection-from-data-corruption" title="Link to this heading">¶</a></h3>
+<p>A SHA3-512 checksum is created for the metadata, the file data and the whole file. These checksums allow scanning the files for any data corruption.</p>
+<p>While the checksums for the metadata block and file data are encrypted, the checksum for the whole file is stored unencrypted and allows quick checks for file corruption.</p>
+</section>
+</section>
+<section id="non-goals">
+<h2>Non-Goals<a class="headerlink" href="#non-goals" title="Link to this heading">¶</a></h2>
+<section id="multiple-keys-trust-networks">
+<h3>Multiple Keys / Trust Networks<a class="headerlink" href="#multiple-keys-trust-networks" title="Link to this heading">¶</a></h3>
+<p>This library or file format is not intended to be a replacement for tools like PGP/GPG, where files can be encrypted with multiple public keys. It is meant to work automatically as part of a server process or application.</p>
+</section>
+<section id="protection-from-maliciously-manipulation">
+<h3>Protection from Maliciously Manipulation<a class="headerlink" href="#protection-from-maliciously-manipulation" title="Link to this heading">¶</a></h3>
+<p>While the files use checksums to detect any data corruptions, these checksums are not signed with a private key. Therefore, there is a <em>slim</em> chance the file can be manipulated in a way which can not be detected.</p>
+<p>If an attacker gains access to a server, it will also gain access to the public key and is able to encrypt arbitrary files - which makes manipulating existing files easy, by just replacing them.</p>
+<p>The checksums for the metadata and file data are encrypted with the same symmetric key to prevent guesses/comparison about the contents of the encrypted data. This encryption provides a protection about bit-flip attacks on the AES-CBC encrypted data - but it is only detected after encrypting the data using the private key.</p>
+</section>
+</section>
+<section id="used-algorithms-and-hashes">
+<h2>Used Algorithms and Hashes<a class="headerlink" href="#used-algorithms-and-hashes" title="Link to this heading">¶</a></h2>
+<p>The used encryption is strong, open and well established:</p>
+<ul class="simple">
+<li><p>For the key pairs, RSA 4096 keys are used.</p></li>
+<li><p>The symmetric key is encrypted using the RSA public key, using OAEP.</p></li>
+<li><p>OAEP us used with MGF1 with SHA256.</p></li>
+<li><p>For the actual data encryption, AES-256/CBC is used with random keys and IVs.</p></li>
+<li><p>An SHA3-512 digest are used to verify the integrity of the metadata and data.</p></li>
+<li><p>The metadata, data and the digests are encrypted with an individual random IV.</p></li>
+<li><p>The file digest is not encrypted to easily check for data corruption.</p></li>
+</ul>
+</section>
+<section id="file-sizes">
+<h2>File Sizes<a class="headerlink" href="#file-sizes" title="Link to this heading">¶</a></h2>
+<p>By design, the format was made for files in a range of megabytes up to several terabytes.</p>
+<p>Encrypting a large amount of small files generates lots of additional data. In these cases, consider collecting these files into a container (e.g. ZIP container) first, then encrypt this container.</p>
+<p>Files up to 10 TB should prove no problem, as the used AES-256/CBC encryption is efficient and fast.</p>
+<p>There is an <em>arbitrary limit</em> for files greater than 10 TB. This limit is set to have a reasonable limit to verify the file integrity. Technically, the limit is at 18 Exabyte, because a 64bit value is used to store the size.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tools.html" class="btn btn-neutral float-left" title="Tools" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="format.html" class="btn btn-neutral float-right" title="The File Format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2024, Tobias Erbsland and EducateIT GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
