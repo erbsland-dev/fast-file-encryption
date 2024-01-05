@@ -9,7 +9,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, Union, BinaryIO
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
@@ -21,6 +21,9 @@ from .errors import DataTooLargeError
 from .internals import AES_BLOCK_SIZE_BYTES, \
     FILE_CONFIG_TEXT, FILE_MAGIC, KNOWN_BLOCK_TYPES, FILE_SIZE_LIMIT, WORKING_BLOCK_SIZE, SIZE_ENDIANNESS, \
     SIZE_VALUE_LENGTH, AES_KEY_LENGTH_BYTES, CHUNK_SIZE_LENGTH, MAXIMUM_CHUNK_SIZE, CHUNKED_BLOCK_SIZE_VALUE
+
+
+AcceptedIOStream = Union[io.BufferedIOBase, BinaryIO]
 
 
 class Encryptor:
@@ -189,7 +192,7 @@ class Encryptor:
         self._write_encrypted_block(b'DATA', source_data)
         self._write_encrypted_block(b'DTHA', hashlib.sha3_512(source_data).digest())
 
-    def _write_file_data(self, source_size: int, sf: io.BufferedIOBase):
+    def _write_file_data(self, source_size: int, sf: AcceptedIOStream):
         """
         Write the  file data encrypted to the destination.
 
@@ -417,7 +420,7 @@ class Encryptor:
             self._write_end_with_hash()
         self._clean_up()
 
-    def stream_encrypted(self, source_io: io.BufferedIOBase, destination_io: io.BufferedIOBase,
+    def stream_encrypted(self, source_io: AcceptedIOStream, destination_io: AcceptedIOStream,
                          meta: Dict[str, Any] = None):
         """
         Read data from a stream and write it encrypted into another stream.

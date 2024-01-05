@@ -152,6 +152,7 @@ class TestStream:
             def seekable(self) -> bool:
                 return False
 
+            # noinspection PyMethodOverriding
             def read(self, size: int) -> bytes:
                 if not self.buffer:
                     return b''
@@ -160,6 +161,7 @@ class TestStream:
                 del self.buffer[:b]
                 return result
 
+            # noinspection PyMethodOverriding
             def read1(self, size: int) -> bytes:
                 return self.read(size)
 

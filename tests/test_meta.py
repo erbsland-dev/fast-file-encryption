@@ -58,8 +58,10 @@ class TestMetadata:
         stored_file_path = tmp_path / 'empty.data'
         encryptor = Encryptor(public_key=public_key)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             encryptor.save_encrypted(source_data=bytes(), destination=stored_file_path, meta=12)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             encryptor.save_encrypted(source_data=bytes(), destination=stored_file_path, meta='text')
         with pytest.raises(ValueError):
             meta = {

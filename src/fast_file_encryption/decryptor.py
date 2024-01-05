@@ -7,7 +7,7 @@ import hashlib
 import io
 import json
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, Union, BinaryIO
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
@@ -20,6 +20,9 @@ from .internals import AES_BLOCK_SIZE_BYTES, \
     FILE_CONFIG_TEXT, FILE_MAGIC, KNOWN_BLOCK_TYPES, FILE_SIZE_LIMIT, WORKING_BLOCK_SIZE, AES_IV_LENGTH_BYTES, \
     SIZE_ENDIANNESS, SIZE_VALUE_LENGTH, AES_KEY_LENGTH_BYTES, ENCRYPTION_DATA_GAIN, CHUNK_SIZE_LENGTH, \
     CHUNKED_BLOCK_SIZE_VALUE, MAXIMUM_BLOCK_SIZE_VALUE
+
+
+AcceptedIOStream = Union[io.BufferedIOBase, BinaryIO]
 
 
 class Decryptor:
@@ -486,7 +489,7 @@ class Decryptor:
         # At this point the decrypted data has its final length. Return the digest.
         return block_hash_context.digest()
 
-    def _decrypt_stream(self, source_io: io.BufferedIOBase, destination_io: io.BufferedIOBase):
+    def _decrypt_stream(self, source_io: AcceptedIOStream, destination_io: AcceptedIOStream):
         """
         Decrypt a file from a source stream and write the decrypted data into the target stream.
 
@@ -535,7 +538,7 @@ class Decryptor:
             destination.unlink(missing_ok=True)
             raise
 
-    def stream_decrypted(self, source_io: io.BufferedIOBase, destination_io: io.BufferedIOBase):
+    def stream_decrypted(self, source_io: AcceptedIOStream, destination_io: AcceptedIOStream):
         """
         Decrypt the data from the source stream and write it to the destination stream.
 

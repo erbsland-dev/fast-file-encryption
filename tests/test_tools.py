@@ -20,6 +20,7 @@ class TestTools:
         s = b.decode('utf-8')
         ffe.read_public_key(s)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.read_public_key(10)
         with pytest.raises(ValueError):
             ffe.read_public_key('''-----BEGIN PUBLIC KEY-----
@@ -35,6 +36,7 @@ GXz2vjptQeJne4L+5X1qZuI7NB7D2ZCXtSnwhyVEjoBLhLRzgiJIKVvQBA==
         s = b.decode('utf-8')
         ffe.read_private_key(s)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.read_private_key(10)
         with pytest.raises(ValueError):
             ffe.read_private_key('''-----BEGIN EC PRIVATE KEY-----
@@ -71,10 +73,14 @@ NB7D2ZCXtSnwhyVEjoBLhLRzgiJIKVvQBA==
         assert private_key.read_bytes() != private_key_data
         # Test invalid parameters
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.save_key_pair(public_key=None, private_key=private_key)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.save_key_pair(public_key='path', private_key=private_key)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.save_key_pair(public_key=public_key, private_key=None)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.save_key_pair(public_key=public_key, private_key='path')
