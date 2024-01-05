@@ -1,16 +1,6 @@
-# Copyright 2021 by Tobias Erbsland / EducateIT GmbH
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#  Copyright © 2021-2024 Tobias Erbsland https://erbsland.dev/ and EducateIT GmbH https://educateit.ch/
+#  According to the copyright terms specified in the file "COPYRIGHT.md".
+#  SPDX-License-Identifier: Apache-2.0
 
 
 from cryptography.hazmat.primitives import serialization
@@ -30,6 +20,7 @@ class TestTools:
         s = b.decode('utf-8')
         ffe.read_public_key(s)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.read_public_key(10)
         with pytest.raises(ValueError):
             ffe.read_public_key('''-----BEGIN PUBLIC KEY-----
@@ -45,6 +36,7 @@ GXz2vjptQeJne4L+5X1qZuI7NB7D2ZCXtSnwhyVEjoBLhLRzgiJIKVvQBA==
         s = b.decode('utf-8')
         ffe.read_private_key(s)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.read_private_key(10)
         with pytest.raises(ValueError):
             ffe.read_private_key('''-----BEGIN EC PRIVATE KEY-----
@@ -81,10 +73,14 @@ NB7D2ZCXtSnwhyVEjoBLhLRzgiJIKVvQBA==
         assert private_key.read_bytes() != private_key_data
         # Test invalid parameters
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.save_key_pair(public_key=None, private_key=private_key)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.save_key_pair(public_key='path', private_key=private_key)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.save_key_pair(public_key=public_key, private_key=None)
         with pytest.raises(ValueError):
+            # noinspection PyTypeChecker
             ffe.save_key_pair(public_key=public_key, private_key='path')

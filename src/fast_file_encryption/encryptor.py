@@ -1,16 +1,6 @@
-# Copyright 2021 by Tobias Erbsland / EducateIT GmbH
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#  Copyright © 2022-2024 Tobias Erbsland https://erbsland.dev/ and EducateIT GmbH https://educateit.ch/
+#  According to the copyright terms specified in the file "COPYRIGHT.md".
+#  SPDX-License-Identifier: Apache-2.0
 
 
 import hashlib
@@ -19,7 +9,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, Union, BinaryIO
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
@@ -31,6 +21,9 @@ from .errors import DataTooLargeError
 from .internals import AES_BLOCK_SIZE_BYTES, \
     FILE_CONFIG_TEXT, FILE_MAGIC, KNOWN_BLOCK_TYPES, FILE_SIZE_LIMIT, WORKING_BLOCK_SIZE, SIZE_ENDIANNESS, \
     SIZE_VALUE_LENGTH, AES_KEY_LENGTH_BYTES, CHUNK_SIZE_LENGTH, MAXIMUM_CHUNK_SIZE, CHUNKED_BLOCK_SIZE_VALUE
+
+
+AcceptedIOStream = Union[io.BufferedIOBase, BinaryIO]
 
 
 class Encryptor:
@@ -199,7 +192,7 @@ class Encryptor:
         self._write_encrypted_block(b'DATA', source_data)
         self._write_encrypted_block(b'DTHA', hashlib.sha3_512(source_data).digest())
 
-    def _write_file_data(self, source_size: int, sf: io.BufferedIOBase):
+    def _write_file_data(self, source_size: int, sf: AcceptedIOStream):
         """
         Write the  file data encrypted to the destination.
 
@@ -427,7 +420,7 @@ class Encryptor:
             self._write_end_with_hash()
         self._clean_up()
 
-    def stream_encrypted(self, source_io: io.BufferedIOBase, destination_io: io.BufferedIOBase,
+    def stream_encrypted(self, source_io: AcceptedIOStream, destination_io: AcceptedIOStream,
                          meta: Dict[str, Any] = None):
         """
         Read data from a stream and write it encrypted into another stream.
