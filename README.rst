@@ -52,7 +52,9 @@ You find all details about the library, it's design and file format in the `docu
 License
 -------
 
-Copyright 2021 by Tobias Erbsland @ EducateIT GmbH
+Copyright © 2021-2024 Tobias Erbsland https://erbsland.dev/ and EducateIT GmbH https://educateit.ch/
+
+According to the copyright terms specified in the file "COPYRIGHT.md".
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
