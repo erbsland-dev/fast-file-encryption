@@ -22,7 +22,7 @@ Getting Started 🚀
 
 New to the project? Start with our step-by-step **Getting Started Guide**. It walks you through installation, key generation, and your first file encryption.
 
-▶️ [Getting Started](https://erbsland-dev.github.io/fast-file-encryption/chapters/get-started.html)
+▶️ `Getting Started <https://erbsland-dev.github.io/fast-file-encryption/chapters/get-started.html>`_
 
 Documentation 📚
 ----------------
@@ -33,9 +33,9 @@ Explore the full documentation:
 * Key management tools and utilities
 * Technical details of the file format
 
-▶️ [Reference Manual](https://erbsland-dev.github.io/fast-file-encryption/chapters/reference/)
+▶️ `Reference Manual <https://erbsland-dev.github.io/fast-file-encryption/chapters/reference/>`_
 
-▶️ [File Format Specification](https://erbsland-dev.github.io/fast-file-encryption/format.html)
+▶️ `File Format Specification <https://erbsland-dev.github.io/fast-file-encryption/format.html>`_
 
 Requirements
 ------------
@@ -55,14 +55,14 @@ Project Goals
 * **No Key = No Access** — Data remains safe even if a server is compromised.
 * **Corruption Detection** — Built-in checksums detect silent corruption.
 
-▶️ [More about our design goals](https://erbsland-dev.github.io/fast-file-encryption/goals.html)
+▶️ `More about our design goals <https://erbsland-dev.github.io/fast-file-encryption/goals.html>`_
 
 Bug Reports & Feature Requests
 ------------------------------
 
 Have feedback or ideas? Found a bug? We'd love to hear from you.
 
-▶️ [Submit an Issue](https://github.com/erbsland-dev/fast-file-encryption/issues)
+▶️ `Submit an Issue <https://github.com/erbsland-dev/fast-file-encryption/issues>`_
 
 License
 -------
