@@ -337,7 +337,10 @@ class Decryptor:
         metadata_raw_digest = hashlib.sha3_512(metadata_raw).digest()
         if metadata_digest != metadata_raw_digest:
             raise IntegrityError('The digest of the metadata block does not match.')
-        metadata = json.loads(metadata_raw)
+        try:
+            metadata = json.loads(metadata_raw)
+        except json.JSONDecodeError as e:  # pragma: no cover - defensive
+            raise IntegrityError('The metadata block is not valid JSON.') from e
         if not isinstance(metadata, dict):
             raise IntegrityError('The received metadata block was no object.')
         return metadata

@@ -4,9 +4,11 @@
 
 
 import random
+import hashlib
 
 import pytest
 
+import fast_file_encryption as ffe
 from fast_file_encryption import Encryptor, Decryptor
 
 
@@ -69,3 +71,28 @@ class TestMetadata:
         with pytest.raises(ValueError):
             meta = {"too_long": "x" * 200000}
             encryptor.save_encrypted(source_data=bytes(), destination=stored_file_path, meta=meta)
+
+    def test_metadata_json_error(self, tmp_path, public_key, private_key, monkeypatch):
+        """
+        Ensure invalid JSON in metadata raises :class:`IntegrityError`.
+        """
+        encryptor = Encryptor(public_key=public_key)
+        decryptor = Decryptor(private_key=private_key)
+        stored_file_path = tmp_path / "file.ffe"
+        encryptor.save_encrypted(source_data=b"data", destination=stored_file_path, meta={"a": 1})
+
+        original = decryptor._read_encrypted_block
+
+        def fake_read_encrypted_block(
+            self, expected_type: bytes, maximum_size: int = 100_000, user_limit: bool = False
+        ):
+            if expected_type == b"META":
+                return b"{invalid json"
+            if expected_type == b"MDHA":
+                return hashlib.sha3_512(b"{invalid json").digest()
+            return original(expected_type, maximum_size, user_limit)
+
+        monkeypatch.setattr(decryptor, "_read_encrypted_block", fake_read_encrypted_block.__get__(decryptor, Decryptor))
+
+        with pytest.raises(ffe.IntegrityError):
+            decryptor.read_metadata(stored_file_path)

@@ -24,12 +24,12 @@ class TestTools:
             # noinspection PyTypeChecker
             ffe.read_public_key(10)
         with pytest.raises(ValueError):
-            ffe.read_public_key(
-                """-----BEGIN PUBLIC KEY-----
+            # This is a fake key, no real secret.
+            public_fake_key = """-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+R08BghrJHOeb5tjy6yntbcM2x6z
 GXz2vjptQeJne4L+5X1qZuI7NB7D2ZCXtSnwhyVEjoBLhLRzgiJIKVvQBA==
 -----END PUBLIC KEY-----"""
-            )
+            ffe.read_public_key(public_fake_key)
 
     def test_read_private_key(self, keys_dir):
         path = keys_dir / "test_private_key.pem"
@@ -42,13 +42,13 @@ GXz2vjptQeJne4L+5X1qZuI7NB7D2ZCXtSnwhyVEjoBLhLRzgiJIKVvQBA==
             # noinspection PyTypeChecker
             ffe.read_private_key(10)
         with pytest.raises(ValueError):
-            ffe.read_private_key(
-                """-----BEGIN EC PRIVATE KEY-----
+            # This is a fake key, no real secret.
+            private_fake_key = """-----BEGIN EC PRIVATE KEY-----
 MHcCAQEEIKBrKq/wWvsDKhD9nWlrfBZnMutErcGzJZj+HysFchIZoAoGCCqGSM49
 AwEHoUQDQgAE+R08BghrJHOeb5tjy6yntbcM2x6zGXz2vjptQeJne4L+5X1qZuI7
 NB7D2ZCXtSnwhyVEjoBLhLRzgiJIKVvQBA==
 -----END EC PRIVATE KEY-----"""
-            )
+            ffe.read_private_key(private_fake_key)
 
     def test_save_keypair(self, tmp_path):
         public_key = tmp_path / "public_key.pem"

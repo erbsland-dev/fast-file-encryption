@@ -223,3 +223,17 @@ class TestEncryption:
             decryptor.load_decrypted(source=data_dir / "8k-random-2nd-key.ffe")
         with pytest.raises(IntegrityError):
             decryptor.copy_decrypted(source=data_dir / "8k-random-2nd-key.ffe", destination=decrypted_file)
+
+    def test_source_file_size_limit(self, tmp_path, public_key, monkeypatch):
+        """
+        Test copy_encrypted respects FILE_SIZE_LIMIT.
+        """
+        source_path = tmp_path / "source.data"
+        destination_path = tmp_path / "destination.ffe"
+        source_path.write_bytes(b"x" * 200)
+        limit = 100
+        monkeypatch.setattr("fast_file_encryption.encryptor.FILE_SIZE_LIMIT", limit)
+        monkeypatch.setattr("fast_file_encryption.internals.FILE_SIZE_LIMIT", limit)
+        encryptor = Encryptor(public_key=public_key)
+        with pytest.raises(DataTooLargeError):
+            encryptor.copy_encrypted(source=source_path, destination=destination_path)
