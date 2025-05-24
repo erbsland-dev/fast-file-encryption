@@ -7,7 +7,7 @@ import hashlib
 import io
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple, Union, BinaryIO
 
@@ -357,9 +357,9 @@ class Encryptor:
         if 'file_size' not in meta:
             meta['file_size'] = source.stat().st_size
         if 'created' not in meta:
-            meta['created'] = datetime.utcfromtimestamp(source.stat().st_ctime).isoformat()
+            meta['created'] = datetime.fromtimestamp(source.stat().st_ctime, timezone.utc).isoformat()
         if 'modified' not in meta:
-            meta['modified'] = datetime.utcfromtimestamp(source.stat().st_mtime).isoformat()
+            meta['modified'] = datetime.fromtimestamp(source.stat().st_mtime, timezone.utc).isoformat()
         return meta
 
     def save_encrypted(self, source_data: bytes, destination: Path, meta: Dict[str, Any] = None):
