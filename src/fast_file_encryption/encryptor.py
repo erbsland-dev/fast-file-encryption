@@ -18,10 +18,20 @@ from cryptography.hazmat.primitives.ciphers import algorithms, modes, Cipher, Ci
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 from .errors import DataTooLargeError
-from .internals import AES_BLOCK_SIZE_BYTES, \
-    FILE_CONFIG_TEXT, FILE_MAGIC, KNOWN_BLOCK_TYPES, FILE_SIZE_LIMIT, WORKING_BLOCK_SIZE, SIZE_ENDIANNESS, \
-    SIZE_VALUE_LENGTH, AES_KEY_LENGTH_BYTES, CHUNK_SIZE_LENGTH, MAXIMUM_CHUNK_SIZE, CHUNKED_BLOCK_SIZE_VALUE
-
+from .internals import (
+    AES_BLOCK_SIZE_BYTES,
+    FILE_CONFIG_TEXT,
+    FILE_MAGIC,
+    KNOWN_BLOCK_TYPES,
+    FILE_SIZE_LIMIT,
+    WORKING_BLOCK_SIZE,
+    SIZE_ENDIANNESS,
+    SIZE_VALUE_LENGTH,
+    AES_KEY_LENGTH_BYTES,
+    CHUNK_SIZE_LENGTH,
+    MAXIMUM_CHUNK_SIZE,
+    CHUNKED_BLOCK_SIZE_VALUE,
+)
 
 AcceptedIOStream = Union[io.BufferedIOBase, BinaryIO]
 
@@ -42,8 +52,9 @@ class Encryptor:
         self.destination_file_handle: Optional[io.BufferedIOBase] = None  # The current target file handle.
         self.algorithm: Optional[algorithms.CipherAlgorithm] = None  # The encryption algorithm which is used.
         # Generate the hash for the given public key.
-        self.public_key_hash = hashlib.sha3_512(self.public_key.public_bytes(
-            encoding=Encoding.DER, format=PublicFormat.SubjectPublicKeyInfo)).digest()
+        self.public_key_hash = hashlib.sha3_512(
+            self.public_key.public_bytes(encoding=Encoding.DER, format=PublicFormat.SubjectPublicKeyInfo)
+        ).digest()
         self._chunked_buffer = bytearray()  # A buffer to write chunked data more efficient.
 
     def _write_with_digest(self, data: bytes):
@@ -70,11 +81,11 @@ class Encryptor:
         :param data: The data for the block.
         """
         if len(block_type) != 4:
-            raise ValueError('Block type must be 4 bytes')
+            raise ValueError("Block type must be 4 bytes")
         if len(data) > 100_000:
-            raise ValueError('Block data exceeds 100k')
+            raise ValueError("Block data exceeds 100k")
         if block_type not in KNOWN_BLOCK_TYPES:
-            raise ValueError('Block type is not known.')
+            raise ValueError("Block type is not known.")
         self._write_with_digest(block_type)
         size_data = len(data).to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False)
         self._write_with_digest(size_data)
@@ -87,9 +98,9 @@ class Encryptor:
         :param block_type: The block type.
         """
         if len(block_type) != 4:
-            raise ValueError('Block type must be 4 bytes')
-        if block_type != b'DATA':
-            raise ValueError('Only `DATA` blocks can use the chunked data format.')
+            raise ValueError("Block type must be 4 bytes")
+        if block_type != b"DATA":
+            raise ValueError("Only `DATA` blocks can use the chunked data format.")
         self._write_with_digest(block_type)
         size_data = CHUNKED_BLOCK_SIZE_VALUE.to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False)
         self._write_with_digest(size_data)
@@ -98,13 +109,13 @@ class Encryptor:
         """
         Write the block with the encryption configuration.
         """
-        self._write_block(b'CONF', FILE_CONFIG_TEXT)
+        self._write_block(b"CONF", FILE_CONFIG_TEXT)
 
     def _write_public_key_hash(self):
         """
         Write the hash of the public key
         """
-        self._write_block(b'EPUB', self.public_key_hash)
+        self._write_block(b"EPUB", self.public_key_hash)
 
     def _create_and_write_encryption_key(self):
         """
@@ -114,13 +125,10 @@ class Encryptor:
         encryption_key = os.urandom(AES_KEY_LENGTH_BYTES)
         # Encrypt the encryption key and store it in the file.
         encrypted_encryption_key = self.public_key.encrypt(
-            encryption_key,
-            OAEP(
-                mgf=MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None))
+            encryption_key, OAEP(mgf=MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None)
+        )
         # Write the encrypted encryption key.
-        self._write_block(b'ESYM', encrypted_encryption_key)
+        self._write_block(b"ESYM", encrypted_encryption_key)
         self.algorithm = algorithms.AES(encryption_key)
 
     def _prepare_encryption(self) -> Tuple[CipherContext, bytes]:
@@ -146,7 +154,7 @@ class Encryptor:
         cipher_context, iv = self._prepare_encryption()
         encrypted_data = len(data).to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False)
         encrypted_data += iv
-        padding = b''
+        padding = b""
         if (last_short_block := len(data) % AES_BLOCK_SIZE_BYTES) > 0:
             padding = os.urandom(AES_BLOCK_SIZE_BYTES - last_short_block)
         encrypted_data += cipher_context.update(data + padding)
@@ -169,13 +177,13 @@ class Encryptor:
         :param meta: The dictionary with the meta data.
         """
         if not meta:
-            self._write_block(b'META', b'')
-            self._write_block(b'MDHA', b'')
+            self._write_block(b"META", b"")
+            self._write_block(b"MDHA", b"")
             return
-        meta_data = json.dumps(meta).encode('utf-8')
-        self._write_encrypted_block(b'META', meta_data)
+        meta_data = json.dumps(meta).encode("utf-8")
+        self._write_encrypted_block(b"META", meta_data)
         # Write the hash of the metadata.
-        self._write_encrypted_block(b'MDHA', hashlib.sha3_512(meta_data).digest())
+        self._write_encrypted_block(b"MDHA", hashlib.sha3_512(meta_data).digest())
 
     def _write_bytes_data(self, source_data: bytes):
         """
@@ -186,11 +194,11 @@ class Encryptor:
         source_size = len(source_data)
         if source_size == 0:
             # Write two empty blocks for empty files. This is safer than writing encryption data.
-            self._write_block(b'DATA', b'')
-            self._write_block(b'DTHA', b'')
+            self._write_block(b"DATA", b"")
+            self._write_block(b"DTHA", b"")
             return
-        self._write_encrypted_block(b'DATA', source_data)
-        self._write_encrypted_block(b'DTHA', hashlib.sha3_512(source_data).digest())
+        self._write_encrypted_block(b"DATA", source_data)
+        self._write_encrypted_block(b"DTHA", hashlib.sha3_512(source_data).digest())
 
     def _write_file_data(self, source_size: int, sf: AcceptedIOStream):
         """
@@ -201,18 +209,19 @@ class Encryptor:
         """
         if source_size == 0:
             # Write two empty blocks for empty files. This is safer than writing encryption data.
-            self._write_block(b'DATA', b'')
-            self._write_block(b'DTHA', b'')
+            self._write_block(b"DATA", b"")
+            self._write_block(b"DTHA", b"")
             return
         encryptor, iv = self._prepare_encryption()
-        self._write_with_digest(b'DATA')  # Write the block type.
+        self._write_with_digest(b"DATA")  # Write the block type.
         # Calculate and write the size of the encrypted data.
-        padding = b''
+        padding = b""
         if (last_short_block := source_size % AES_BLOCK_SIZE_BYTES) > 0:
             padding = os.urandom(AES_BLOCK_SIZE_BYTES - last_short_block)
         encrypted_data_size = SIZE_VALUE_LENGTH + len(iv) + source_size + len(padding)
         self._write_with_digest(
-            encrypted_data_size.to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
+            encrypted_data_size.to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False)
+        )
         # Write the unencrypted size.
         self._write_with_digest(source_size.to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
         # Write the IV
@@ -226,7 +235,7 @@ class Encryptor:
             self._write_with_digest(encryptor.update(block))
         self._write_with_digest(encryptor.finalize())
         # Write the hash of the original data.
-        self._write_encrypted_block(b'DTHA', block_hash_context.digest())
+        self._write_encrypted_block(b"DTHA", block_hash_context.digest())
 
     def _write_data_chunk(self, data: bytes):
         """
@@ -269,15 +278,15 @@ class Encryptor:
         block = source_file_handle.read(WORKING_BLOCK_SIZE)
         if len(block) == 0:
             # Write two empty blocks for empty files. This is safer than writing encryption data.
-            self._write_block(b'DATA', b'')
-            self._write_block(b'DTHA', b'')
+            self._write_block(b"DATA", b"")
+            self._write_block(b"DTHA", b"")
             return
         elif len(block) < WORKING_BLOCK_SIZE:
-            self._write_encrypted_block(b'DATA', block)
-            self._write_encrypted_block(b'DTHA', hashlib.sha3_512(block).digest())
+            self._write_encrypted_block(b"DATA", block)
+            self._write_encrypted_block(b"DTHA", hashlib.sha3_512(block).digest())
             return
         encryptor, iv = self._prepare_encryption()
-        self._write_chunked_block_header(b'DATA')
+        self._write_chunked_block_header(b"DATA")
         # Write the IV
         self._write_chunked_data(iv)
         # Encrypt the first block
@@ -285,7 +294,7 @@ class Encryptor:
         block_hash_context.update(block)
         self._write_chunked_data(encryptor.update(block))
         # Encrypt all following blocks
-        last_block = b''
+        last_block = b""
         while block := source_file_handle.read(WORKING_BLOCK_SIZE):
             if last_block:
                 self._write_chunked_data(encryptor.update(last_block))
@@ -293,7 +302,7 @@ class Encryptor:
             last_block = block
         # At this point, we always get the last read block which was not encrypted yet.
         # Always apply ISO/IEC 9797-1 padding method 2 to the last block (even it is empty)
-        last_block += b'\x80'
+        last_block += b"\x80"
         misalignment = len(last_block) % AES_BLOCK_SIZE_BYTES
         if misalignment:
             last_block += bytes(AES_BLOCK_SIZE_BYTES - misalignment)
@@ -302,16 +311,17 @@ class Encryptor:
         # End the chunked data stream
         self._flush_chunked_data()
         # Write the hash of the original data.
-        self._write_encrypted_block(b'DTHA', block_hash_context.digest())
+        self._write_encrypted_block(b"DTHA", block_hash_context.digest())
 
     def _write_end_with_hash(self):
         """
         Write the end mark with the file hash.
         """
-        self.destination_file_handle.write(b'ENDH')
+        self.destination_file_handle.write(b"ENDH")
         file_digest = self.destination_file_digest.digest()
         self.destination_file_handle.write(
-            len(file_digest).to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False))
+            len(file_digest).to_bytes(SIZE_VALUE_LENGTH, byteorder=SIZE_ENDIANNESS, signed=False)
+        )
         self.destination_file_handle.write(file_digest)
 
     def _clean_up(self):
@@ -332,10 +342,10 @@ class Encryptor:
         """
         if meta:
             if not isinstance(meta, dict):
-                raise ValueError('Metadata has to be a dictionary.')
+                raise ValueError("Metadata has to be a dictionary.")
             for key in meta.keys():
                 if not isinstance(key, str):
-                    raise ValueError('Metadata keys have to be strings.')
+                    raise ValueError("Metadata keys have to be strings.")
 
     @staticmethod
     def _add_source_metadata(source: Path, meta: Dict[str, Any]) -> Dict[str, Any]:
@@ -350,16 +360,16 @@ class Encryptor:
             meta = {}
         else:
             meta = meta.copy()
-        if 'file_path' not in meta:
-            meta['file_path'] = str(source.absolute())
-        if 'file_name' not in meta:
-            meta['file_name'] = str(source.name)
-        if 'file_size' not in meta:
-            meta['file_size'] = source.stat().st_size
-        if 'created' not in meta:
-            meta['created'] = datetime.fromtimestamp(source.stat().st_ctime, timezone.utc).isoformat()
-        if 'modified' not in meta:
-            meta['modified'] = datetime.fromtimestamp(source.stat().st_mtime, timezone.utc).isoformat()
+        if "file_path" not in meta:
+            meta["file_path"] = str(source.absolute())
+        if "file_name" not in meta:
+            meta["file_name"] = str(source.name)
+        if "file_size" not in meta:
+            meta["file_size"] = source.stat().st_size
+        if "created" not in meta:
+            meta["created"] = datetime.fromtimestamp(source.stat().st_ctime, timezone.utc).isoformat()
+        if "modified" not in meta:
+            meta["modified"] = datetime.fromtimestamp(source.stat().st_mtime, timezone.utc).isoformat()
         return meta
 
     def save_encrypted(self, source_data: bytes, destination: Path, meta: Dict[str, Any] = None):
@@ -372,11 +382,11 @@ class Encryptor:
         :param meta: A dictionary with metadata for this file.
         """
         if not isinstance(source_data, bytes):
-            raise ValueError('`source_data` has to be a bytes object.')
+            raise ValueError("`source_data` has to be a bytes object.")
         if not isinstance(destination, Path):
-            raise ValueError('`destination` has to be a `Path` from pathlib.')
+            raise ValueError("`destination` has to be a `Path` from pathlib.")
         self._verify_metadata(meta)
-        with destination.open('wb') as destination_file_handle:
+        with destination.open("wb") as destination_file_handle:
             self.destination_file_digest = hashlib.sha3_512()
             self.destination_file_handle = destination_file_handle
             self._write_file_header()
@@ -385,8 +395,7 @@ class Encryptor:
             self._write_end_with_hash()
         self._clean_up()
 
-    def copy_encrypted(self, source: Path, destination: Path, meta: Dict[str, Any] = None,
-                       add_source_metadata=False):
+    def copy_encrypted(self, source: Path, destination: Path, meta: Dict[str, Any] = None, add_source_metadata=False):
         """
         Copy a file, and store it encrypted at the destination.
 
@@ -401,18 +410,17 @@ class Encryptor:
             defined by ``FILE_SIZE_LIMIT``.
         """
         if not isinstance(source, Path):
-            raise ValueError('`source` has to be a `Path` from pathlib.')
+            raise ValueError("`source` has to be a `Path` from pathlib.")
         if not isinstance(destination, Path):
-            raise ValueError('`destination` has to be a `Path` from pathlib.')
+            raise ValueError("`destination` has to be a `Path` from pathlib.")
         if not isinstance(add_source_metadata, bool):
-            raise ValueError('`add_source_metadata` has to be a boolean value.')
+            raise ValueError("`add_source_metadata` has to be a boolean value.")
         self._verify_metadata(meta)
         source_file_size = source.stat().st_size
         if source_file_size > FILE_SIZE_LIMIT:
             max_tb = FILE_SIZE_LIMIT / 1_000_000_000_000
-            raise DataTooLargeError(
-                f'File sizes larger than {max_tb:.0f}TB are not supported.')
-        with source.open('rb') as source_file_handle, destination.open('wb') as destination_file_handle:
+            raise DataTooLargeError(f"File sizes larger than {max_tb:.0f}TB are not supported.")
+        with source.open("rb") as source_file_handle, destination.open("wb") as destination_file_handle:
             self.destination_file_digest = hashlib.sha3_512()
             self.destination_file_handle = destination_file_handle
             self._write_file_header()
@@ -423,8 +431,9 @@ class Encryptor:
             self._write_end_with_hash()
         self._clean_up()
 
-    def stream_encrypted(self, source_io: AcceptedIOStream, destination_io: AcceptedIOStream,
-                         meta: Dict[str, Any] = None):
+    def stream_encrypted(
+        self, source_io: AcceptedIOStream, destination_io: AcceptedIOStream, meta: Dict[str, Any] = None
+    ):
         """
         Read data from a stream and write it encrypted into another stream.
 
@@ -436,13 +445,13 @@ class Encryptor:
         :param meta: A dictionary with metadata for this file.
         """
         if not isinstance(source_io, io.BufferedIOBase):
-            raise ValueError('`source_io` has to be a subclass of `io.BufferedIOBase`.')
+            raise ValueError("`source_io` has to be a subclass of `io.BufferedIOBase`.")
         if not source_io.readable():
-            raise ValueError('The source stream has to be readable.')
+            raise ValueError("The source stream has to be readable.")
         if not isinstance(destination_io, io.BufferedIOBase):
-            raise ValueError('`destination_io` has to be a subclass of `io.BufferedIOBase`.')
+            raise ValueError("`destination_io` has to be a subclass of `io.BufferedIOBase`.")
         if not destination_io.writable():
-            raise ValueError('The destination stream has to be writeable.')
+            raise ValueError("The destination stream has to be writeable.")
         self._verify_metadata(meta)
         self.destination_file_digest = hashlib.sha3_512()
         self.destination_file_handle = destination_io

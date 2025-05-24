@@ -47,7 +47,7 @@ def read_public_key(public_key: KeyInput) -> RSAPublicKey:
     data = _input_to_bytes(public_key)
     key = serialization.load_pem_public_key(data)
     if not isinstance(key, RSAPublicKey):
-        raise ValueError('The data does not contain a public RSA key.')
+        raise ValueError("The data does not contain a public RSA key.")
     return key
 
 
@@ -62,7 +62,7 @@ def read_private_key(private_key: KeyInput, password: Optional[bytes] = None) ->
     data = _input_to_bytes(private_key)
     key = serialization.load_pem_private_key(data, password=password)
     if not isinstance(key, RSAPrivateKey):
-        raise ValueError('The data does not contain a private RSA key.')
+        raise ValueError("The data does not contain a private RSA key.")
     return key
 
 
@@ -77,18 +77,21 @@ def save_key_pair(*, public_key: Path, private_key: Path):
     :param private_key: The path to the private key file.
     """
     if not public_key:
-        raise ValueError('Missing public key path')
+        raise ValueError("Missing public key path")
     if not private_key:
-        raise ValueError('Missing private key path')
+        raise ValueError("Missing private key path")
     if not isinstance(public_key, Path):
-        raise ValueError('`public_key` has to be a `Path` object.')
+        raise ValueError("`public_key` has to be a `Path` object.")
     if not isinstance(private_key, Path):
-        raise ValueError('`private_key` has to be a `Path` object.')
+        raise ValueError("`private_key` has to be a `Path` object.")
     key = rsa.generate_private_key(public_exponent=65537, key_size=RSA_KEY_SIZE)
-    private_key_data = key.private_bytes(encoding=serialization.Encoding.PEM,
-                                         format=serialization.PrivateFormat.PKCS8,
-                                         encryption_algorithm=serialization.NoEncryption())
+    private_key_data = key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
     private_key.write_bytes(private_key_data)
-    public_key_data = key.public_key().public_bytes(encoding=serialization.Encoding.PEM,
-                                                    format=serialization.PublicFormat.SubjectPublicKeyInfo)
+    public_key_data = key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
     public_key.write_bytes(public_key_data)

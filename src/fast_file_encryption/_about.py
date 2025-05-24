@@ -4,11 +4,11 @@
 
 
 __all__ = [
-    'VERSION',
-    'AUTHOR',
-    'COPYRIGHT',
+    "VERSION",
+    "AUTHOR",
+    "COPYRIGHT",
 ]
 
-VERSION = '1.2.7'
-AUTHOR = 'Tobias Erbsland'
-COPYRIGHT = f'2021-2025, Tobias Erbsland and EducateIT GmbH'
+VERSION = "1.2.7"
+AUTHOR = "Tobias Erbsland"
+COPYRIGHT = f"2021-2025, Tobias Erbsland and EducateIT GmbH"

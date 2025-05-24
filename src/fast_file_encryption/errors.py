@@ -12,11 +12,13 @@ class IntegrityError(Exception):
     - Checksum mismatch.
     - Corrupt data.
     """
+
     pass
 
 
 class DataTooLargeError(Exception):
     """
-    This exception is thrown, if you set a maximum size and it would be exceeded.
+    This exception is thrown if you set a maximum size, and it would be exceeded.
     """
+
     pass

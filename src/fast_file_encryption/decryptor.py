@@ -16,11 +16,22 @@ from cryptography.hazmat.primitives.ciphers import algorithms, modes, Cipher
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 from .errors import IntegrityError, DataTooLargeError
-from .internals import AES_BLOCK_SIZE_BYTES, \
-    FILE_CONFIG_TEXT, FILE_MAGIC, KNOWN_BLOCK_TYPES, FILE_SIZE_LIMIT, WORKING_BLOCK_SIZE, AES_IV_LENGTH_BYTES, \
-    SIZE_ENDIANNESS, SIZE_VALUE_LENGTH, AES_KEY_LENGTH_BYTES, ENCRYPTION_DATA_GAIN, CHUNK_SIZE_LENGTH, \
-    CHUNKED_BLOCK_SIZE_VALUE, MAXIMUM_BLOCK_SIZE_VALUE
-
+from .internals import (
+    AES_BLOCK_SIZE_BYTES,
+    FILE_CONFIG_TEXT,
+    FILE_MAGIC,
+    KNOWN_BLOCK_TYPES,
+    FILE_SIZE_LIMIT,
+    WORKING_BLOCK_SIZE,
+    AES_IV_LENGTH_BYTES,
+    SIZE_ENDIANNESS,
+    SIZE_VALUE_LENGTH,
+    AES_KEY_LENGTH_BYTES,
+    ENCRYPTION_DATA_GAIN,
+    CHUNK_SIZE_LENGTH,
+    CHUNKED_BLOCK_SIZE_VALUE,
+    MAXIMUM_BLOCK_SIZE_VALUE,
+)
 
 AcceptedIOStream = Union[io.BufferedIOBase, BinaryIO]
 
@@ -40,8 +51,9 @@ class Decryptor:
         self.source_file_handle: Optional[io.BufferedIOBase] = None  # The current source file handle.
         self.algorithm: Optional[algorithms.CipherAlgorithm] = None  # The encryption algorithm which is used.
         # Generate the hash for the given public key of the private key.
-        self.public_key_hash = hashlib.sha3_512(self.private_key.public_key().public_bytes(
-            encoding=Encoding.DER, format=PublicFormat.SubjectPublicKeyInfo)).digest()
+        self.public_key_hash = hashlib.sha3_512(
+            self.private_key.public_key().public_bytes(encoding=Encoding.DER, format=PublicFormat.SubjectPublicKeyInfo)
+        ).digest()
         # Cache for chunked reads
         self._current_chunk_size = 0
 
@@ -51,7 +63,7 @@ class Decryptor:
         """
         file_magic = self.source_file_handle.read(len(FILE_MAGIC))
         if file_magic != FILE_MAGIC:
-            raise IntegrityError('File magic does not match.')
+            raise IntegrityError("File magic does not match.")
 
     def _read_block_type(self) -> bytes:
         """
@@ -61,9 +73,9 @@ class Decryptor:
         """
         block_type = self.source_file_handle.read(4)
         if len(block_type) < 4:
-            raise IntegrityError('File is not complete.')
+            raise IntegrityError("File is not complete.")
         if block_type not in KNOWN_BLOCK_TYPES:
-            raise IntegrityError('Read unknown block type.')
+            raise IntegrityError("Read unknown block type.")
         return block_type
 
     def _read_block_size(self) -> int:
@@ -75,7 +87,7 @@ class Decryptor:
         """
         size_data = self.source_file_handle.read(SIZE_VALUE_LENGTH)
         if len(size_data) < SIZE_VALUE_LENGTH:
-            raise IntegrityError('File is not complete.')
+            raise IntegrityError("File is not complete.")
         return int.from_bytes(size_data, byteorder=SIZE_ENDIANNESS, signed=False)
 
     def _read_chunk_size(self) -> int:
@@ -87,7 +99,7 @@ class Decryptor:
         """
         size_data = self.source_file_handle.read(CHUNK_SIZE_LENGTH)
         if len(size_data) < CHUNK_SIZE_LENGTH:
-            raise IntegrityError('File is not complete.')
+            raise IntegrityError("File is not complete.")
         return int.from_bytes(size_data, byteorder=SIZE_ENDIANNESS, signed=False)
 
     def _read_iv(self) -> bytes:
@@ -98,7 +110,7 @@ class Decryptor:
         """
         iv = self.source_file_handle.read(AES_IV_LENGTH_BYTES)
         if len(iv) != AES_IV_LENGTH_BYTES:
-            raise IntegrityError('File is not complete.')
+            raise IntegrityError("File is not complete.")
         return iv
 
     def _start_reading_chunked_data(self):
@@ -115,25 +127,25 @@ class Decryptor:
         :return: A block with bytes, or empty bytes block if the end of the chunked section is reached.
         """
         if maximum_bytes_to_read <= 0:
-            raise ValueError('Maximum bytes to read must be greater than zero.')
+            raise ValueError("Maximum bytes to read must be greater than zero.")
         if self._current_chunk_size == 0:  # Set the block to zero if we reached the end.
-            return b''
+            return b""
         if maximum_bytes_to_read < self._current_chunk_size:
             block = self.source_file_handle.read(maximum_bytes_to_read)
             if len(block) < maximum_bytes_to_read:
-                raise IntegrityError('File is not complete.')
+                raise IntegrityError("File is not complete.")
             self._current_chunk_size -= len(block)
         else:
             block = bytearray(self.source_file_handle.read(self._current_chunk_size))
             if len(block) < self._current_chunk_size:
-                raise IntegrityError('File is not complete.')
+                raise IntegrityError("File is not complete.")
             self._current_chunk_size = self._read_chunk_size()
             maximum_bytes_to_read -= len(block)
             while self._current_chunk_size > 0 and maximum_bytes_to_read > 0:
                 bytes_to_read = min(self._current_chunk_size, maximum_bytes_to_read)
                 data = self.source_file_handle.read(bytes_to_read)
                 if len(data) < bytes_to_read:
-                    raise IntegrityError('File is not complete.')
+                    raise IntegrityError("File is not complete.")
                 self._current_chunk_size -= bytes_to_read
                 if self._current_chunk_size == 0:
                     self._current_chunk_size = self._read_chunk_size()
@@ -153,11 +165,11 @@ class Decryptor:
         while chunk_size := self._read_chunk_size():
             if len(data) + chunk_size > maximum_size:
                 if user_limit:
-                    raise DataTooLargeError('The data exceeds the requested limit.')
-                raise IntegrityError('A block exceeds the size limit.')
+                    raise DataTooLargeError("The data exceeds the requested limit.")
+                raise IntegrityError("A block exceeds the size limit.")
             data_chunk = self.source_file_handle.read(chunk_size)
             if len(data_chunk) < chunk_size:
-                raise IntegrityError('File is not complete.')
+                raise IntegrityError("File is not complete.")
             data.extend(data_chunk)
         return data
 
@@ -172,11 +184,11 @@ class Decryptor:
         """
         if block_size > maximum_size:
             if user_limit:
-                raise DataTooLargeError('The data exceeds the requested limit.')
-            raise IntegrityError('A block exceeds the size limit.')
+                raise DataTooLargeError("The data exceeds the requested limit.")
+            raise IntegrityError("A block exceeds the size limit.")
         block_data = self.source_file_handle.read(block_size)
         if len(block_data) < block_size:
-            raise IntegrityError('File is not complete.')
+            raise IntegrityError("File is not complete.")
         return block_data
 
     def _read_block_header(self) -> Tuple[bytes, int]:
@@ -189,8 +201,9 @@ class Decryptor:
         block_size = self._read_block_size()
         return block_type, block_size
 
-    def _read_block(self, maximum_size: int = 100_000, user_limit: bool = False,
-                    allow_chunked: bool = False) -> Tuple[bytes, bytes]:
+    def _read_block(
+        self, maximum_size: int = 100_000, user_limit: bool = False, allow_chunked: bool = False
+    ) -> Tuple[bytes, bytes]:
         """
         Read the next data block in the file.
 
@@ -202,14 +215,14 @@ class Decryptor:
         block_type, block_size = self._read_block_header()
         chunked_data = False
         if block_size == 0:
-            return block_type, b''
+            return block_type, b""
         if block_size == CHUNKED_BLOCK_SIZE_VALUE:
             if not allow_chunked:
-                raise IntegrityError('A block has chunked data where no chunked data is allowed.')
+                raise IntegrityError("A block has chunked data where no chunked data is allowed.")
             chunked_data = True
-            block_type += b'c'  # Mark the block type as chunked.
+            block_type += b"c"  # Mark the block type as chunked.
         elif block_size >= MAXIMUM_BLOCK_SIZE_VALUE:
-            raise IntegrityError('A block has an invalid block size.')
+            raise IntegrityError("A block has an invalid block size.")
         if chunked_data:
             block_data = self._read_chunked_block_data(maximum_size, user_limit)
         else:
@@ -221,42 +234,41 @@ class Decryptor:
         Read the file configuration and verify it.
         """
         block_type, block_data = self._read_block(maximum_size=128)
-        if block_type != b'CONF':
-            raise IntegrityError('Expecting `CONF` block, but found another.')
+        if block_type != b"CONF":
+            raise IntegrityError("Expecting `CONF` block, but found another.")
         if block_data != FILE_CONFIG_TEXT:
-            raise IntegrityError('File configuration does not match expectations.')
+            raise IntegrityError("File configuration does not match expectations.")
 
     def _verify_public_key_hash(self):
         """
         Read and verify the public key hash.
         """
         block_type, block_data = self._read_block(maximum_size=64)
-        if block_type != b'EPUB':
-            raise IntegrityError('Expecting `EPUB` block, but found another.')
+        if block_type != b"EPUB":
+            raise IntegrityError("Expecting `EPUB` block, but found another.")
         if block_data != self.public_key_hash:
-            raise IntegrityError('The key used to encrypt this file does not match the decryption key.')
+            raise IntegrityError("The key used to encrypt this file does not match the decryption key.")
 
     def _read_and_decrypt_key(self):
         """
         Read and decrypt the symmetric AES key.
         """
         block_type, block_data = self._read_block(maximum_size=1000)
-        if block_type != b'ESYM':
-            raise IntegrityError('Expecting `ESYM` block, but found another.')
+        if block_type != b"ESYM":
+            raise IntegrityError("Expecting `ESYM` block, but found another.")
         try:
             encryption_key = self.private_key.decrypt(
-                block_data,
-                OAEP(mgf=MGF1(algorithm=hashes.SHA256()),
-                     algorithm=hashes.SHA256(),
-                     label=None))
+                block_data, OAEP(mgf=MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None)
+            )
         except ValueError as e:
-            raise IntegrityError(f'Failed to read the symmetric key from the file. Error: {e}')
+            raise IntegrityError(f"Failed to read the symmetric key from the file. Error: {e}")
         if len(encryption_key) != AES_KEY_LENGTH_BYTES:
-            raise IntegrityError('The decrypted key has an unexpected length.')
+            raise IntegrityError("The decrypted key has an unexpected length.")
         self.algorithm = algorithms.AES(encryption_key)
 
-    def _read_encrypted_block(self, expected_type: bytes, maximum_size: int = 100_000,
-                              user_limit: bool = False) -> bytes:
+    def _read_encrypted_block(
+        self, expected_type: bytes, maximum_size: int = 100_000, user_limit: bool = False
+    ) -> bytes:
         """
         Read and decrypt a block of data.
 
@@ -265,53 +277,54 @@ class Decryptor:
         :param user_limit: If the maximum size is a limit set by the user.
         :return: The decrypted data from the block.
         """
-        allow_chunked = (expected_type == b'DATA')
-        block_type, block_data = self._read_block(maximum_size=maximum_size + ENCRYPTION_DATA_GAIN,
-                                                  user_limit=user_limit,
-                                                  allow_chunked=allow_chunked)
+        allow_chunked = expected_type == b"DATA"
+        block_type, block_data = self._read_block(
+            maximum_size=maximum_size + ENCRYPTION_DATA_GAIN, user_limit=user_limit, allow_chunked=allow_chunked
+        )
         is_chunked = False
-        if block_type.endswith(b'c'):
+        if block_type.endswith(b"c"):
             block_type = block_type[:4]
             is_chunked = True
         if block_type != expected_type:
             raise IntegrityError(f'Expecting `{expected_type.decode("utf-8")}` block, but found another.')
         if len(block_data) == 0:
-            return b''
+            return b""
         if not is_chunked:
             if len(block_data) <= (SIZE_VALUE_LENGTH + AES_IV_LENGTH_BYTES):
-                raise IntegrityError('The encrypted data is too short to be valid.')
+                raise IntegrityError("The encrypted data is too short to be valid.")
             decrypted_size = int.from_bytes(block_data[:SIZE_VALUE_LENGTH], byteorder=SIZE_ENDIANNESS, signed=False)
             encrypted_size = len(block_data) - SIZE_VALUE_LENGTH - AES_IV_LENGTH_BYTES
             if decrypted_size > encrypted_size:
-                raise IntegrityError(f'Decrypted size ({decrypted_size}) is larger than the actual block '
-                                     f'size ({encrypted_size}).')
+                raise IntegrityError(
+                    f"Decrypted size ({decrypted_size}) is larger than the actual block " f"size ({encrypted_size})."
+                )
             if decrypted_size < 1:
-                raise IntegrityError('The decrypted size is zero, which is not allowed at this point.')
+                raise IntegrityError("The decrypted size is zero, which is not allowed at this point.")
             if encrypted_size % AES_BLOCK_SIZE_BYTES != 0:
-                raise IntegrityError('The encrypted data does not align with the AES block size.')
-            iv = block_data[SIZE_VALUE_LENGTH:AES_IV_LENGTH_BYTES + SIZE_VALUE_LENGTH]
+                raise IntegrityError("The encrypted data does not align with the AES block size.")
+            iv = block_data[SIZE_VALUE_LENGTH : AES_IV_LENGTH_BYTES + SIZE_VALUE_LENGTH]
             cipher = Cipher(self.algorithm, modes.CBC(iv))  # Create the cipher context
             cipher_context = cipher.decryptor()
-            data = cipher_context.update(block_data[AES_IV_LENGTH_BYTES + SIZE_VALUE_LENGTH:])
+            data = cipher_context.update(block_data[AES_IV_LENGTH_BYTES + SIZE_VALUE_LENGTH :])
             data += cipher_context.finalize()
         else:  # Decrypt the chunked format.
             if len(block_data) <= AES_IV_LENGTH_BYTES:
-                raise IntegrityError('The encrypted data is too short to be valid.')
+                raise IntegrityError("The encrypted data is too short to be valid.")
             iv = block_data[:AES_IV_LENGTH_BYTES]
             encrypted_size = len(block_data) - AES_IV_LENGTH_BYTES
             if encrypted_size % AES_BLOCK_SIZE_BYTES != 0:
-                raise IntegrityError('The encrypted data does not align with the AES block size.')
+                raise IntegrityError("The encrypted data does not align with the AES block size.")
             cipher = Cipher(self.algorithm, modes.CBC(iv))  # Create the cipher context
             cipher_context = cipher.decryptor()
             data = cipher_context.update(block_data[AES_IV_LENGTH_BYTES:])
             data += cipher_context.finalize()
             # Check the padding.
             try:
-                index = data.rindex(b'\x80')
+                index = data.rindex(b"\x80")
             except ValueError:
-                raise IntegrityError('Invalid padding of the encrypted data: Missing padding mark.')
+                raise IntegrityError("Invalid padding of the encrypted data: Missing padding mark.")
             if len(data) - index > AES_BLOCK_SIZE_BYTES:
-                raise IntegrityError('Invalid padding of the encrypted data: Padding too large.')
+                raise IntegrityError("Invalid padding of the encrypted data: Padding too large.")
             decrypted_size = index
         return data[:decrypted_size]
 
@@ -328,21 +341,21 @@ class Decryptor:
         """
         Read the metadata block and verify the checksum.
         """
-        metadata_raw = self._read_encrypted_block(b'META', maximum_size=10_000)
-        metadata_digest = self._read_encrypted_block(b'MDHA', maximum_size=1000)
+        metadata_raw = self._read_encrypted_block(b"META", maximum_size=10_000)
+        metadata_digest = self._read_encrypted_block(b"MDHA", maximum_size=1000)
         if len(metadata_raw) == 0:
             if len(metadata_digest) != 0:
-                raise IntegrityError('The digest of the metadata block does not match.')
+                raise IntegrityError("The digest of the metadata block does not match.")
             return {}
         metadata_raw_digest = hashlib.sha3_512(metadata_raw).digest()
         if metadata_digest != metadata_raw_digest:
-            raise IntegrityError('The digest of the metadata block does not match.')
+            raise IntegrityError("The digest of the metadata block does not match.")
         try:
             metadata = json.loads(metadata_raw)
         except json.JSONDecodeError as e:  # pragma: no cover - defensive
-            raise IntegrityError('The metadata block is not valid JSON.') from e
+            raise IntegrityError("The metadata block is not valid JSON.") from e
         if not isinstance(metadata, dict):
-            raise IntegrityError('The received metadata block was no object.')
+            raise IntegrityError("The received metadata block was no object.")
         return metadata
 
     def _skip_block(self, expected_type: bytes):
@@ -363,8 +376,8 @@ class Decryptor:
         :return: The dictionary with the metadata.
         """
         if (file_size := source.stat().st_size) < 256:
-            raise IntegrityError(f'File is too short to be valid. (size={file_size})')
-        with source.open('rb') as source_file_handle:
+            raise IntegrityError(f"File is too short to be valid. (size={file_size})")
+        with source.open("rb") as source_file_handle:
             self.source_file_handle = source_file_handle
             self._read_and_verify_file_header()
             metadata = self._read_metadata_block()
@@ -384,23 +397,23 @@ class Decryptor:
         :raises IntegrityError: On any file integrity problem.
         """
         if (file_size := source.stat().st_size) < 256:
-            raise IntegrityError(f'File is too short to be valid. (size={file_size})')
-        with source.open('rb') as source_file_handle:
+            raise IntegrityError(f"File is too short to be valid. (size={file_size})")
+        with source.open("rb") as source_file_handle:
             self.source_file_handle = source_file_handle
             self._read_and_verify_file_header()
-            self._skip_block(b'META')
-            self._skip_block(b'MDHA')
-            decrypted_data = self._read_encrypted_block(b'DATA',
-                                                        maximum_size=maximum_size + AES_BLOCK_SIZE_BYTES,
-                                                        user_limit=True)
-            file_digest = self._read_encrypted_block(b'DTHA')
+            self._skip_block(b"META")
+            self._skip_block(b"MDHA")
+            decrypted_data = self._read_encrypted_block(
+                b"DATA", maximum_size=maximum_size + AES_BLOCK_SIZE_BYTES, user_limit=True
+            )
+            file_digest = self._read_encrypted_block(b"DTHA")
         if not decrypted_data:  # Zero file?
             if file_digest:
-                raise IntegrityError('The digest of the data block does not match.')
-            return b''
+                raise IntegrityError("The digest of the data block does not match.")
+            return b""
         decrypted_data_digest = hashlib.sha3_512(decrypted_data).digest()
         if file_digest != decrypted_data_digest:
-            raise IntegrityError('The digest of the data block does not match.')
+            raise IntegrityError("The digest of the data block does not match.")
         return decrypted_data
 
     def _decrypt_chunked_block(self, destination: io.BufferedIOBase) -> bytes:
@@ -415,10 +428,10 @@ class Decryptor:
         self._start_reading_chunked_data()
         iv = self._read_chunked_data(AES_IV_LENGTH_BYTES)
         if len(iv) != AES_IV_LENGTH_BYTES:
-            raise IntegrityError('File is not complete.')
+            raise IntegrityError("File is not complete.")
         cipher = Cipher(self.algorithm, modes.CBC(iv))  # Create the cipher context
         cipher_context = cipher.decryptor()
-        decrypted_data = b''
+        decrypted_data = b""
         while encrypted_data := self._read_chunked_data(WORKING_BLOCK_SIZE):
             # Delay writing of the decrypted data, because we need to handle the padding at the end of the file.
             if decrypted_data:
@@ -427,20 +440,20 @@ class Decryptor:
                 total_size += len(decrypted_data)
             # The encrypted data must be aligned the with the working block size.
             if len(encrypted_data) % AES_BLOCK_SIZE_BYTES != 0:
-                raise IntegrityError('File is not complete: Misaligned encrypted data.')
+                raise IntegrityError("File is not complete: Misaligned encrypted data.")
             decrypted_data = cipher_context.update(encrypted_data)
         decrypted_data += cipher_context.finalize()  # This should not add any additional data.
         # At this point, we have the last decrypted block.
         if not decrypted_data:
-            raise IntegrityError('Unexpected end of encrypted data stream.')
+            raise IntegrityError("Unexpected end of encrypted data stream.")
         if len(decrypted_data) % AES_BLOCK_SIZE_BYTES != 0:
-            raise IntegrityError('Decrypted data does not align with the encryption block size.')
+            raise IntegrityError("Decrypted data does not align with the encryption block size.")
         try:
-            index = decrypted_data.rindex(b'\x80')
+            index = decrypted_data.rindex(b"\x80")
         except ValueError:
-            raise IntegrityError('Invalid padding of the encrypted stream: Missing padding mark.')
+            raise IntegrityError("Invalid padding of the encrypted stream: Missing padding mark.")
         if len(decrypted_data) - index > AES_BLOCK_SIZE_BYTES:
-            raise IntegrityError('Invalid padding of the encrypted stream: Padding too large.')
+            raise IntegrityError("Invalid padding of the encrypted stream: Padding too large.")
         decrypted_data = decrypted_data[:index]  # crop the last block.
         if decrypted_data:
             destination.write(decrypted_data)
@@ -458,15 +471,14 @@ class Decryptor:
         """
         if encrypted_block_size > (FILE_SIZE_LIMIT + 1000):  # exceeds supported size
             max_tb = FILE_SIZE_LIMIT / 1_000_000_000_000
-            raise IntegrityError(
-                f'The file size is larger than {max_tb:.0f}TB, which is not supported.')
+            raise IntegrityError(f"The file size is larger than {max_tb:.0f}TB, which is not supported.")
         if encrypted_block_size == 0:
-            return b''  # Empty data requires an empty digest.
+            return b""  # Empty data requires an empty digest.
         block_hash_context = hashlib.sha3_512()
         encrypted_size = encrypted_block_size - SIZE_VALUE_LENGTH - AES_IV_LENGTH_BYTES
         decrypted_size = self._read_block_size()
         if decrypted_size > encrypted_size:
-            raise IntegrityError('The decrypted data size is larger than the encrypted data.')
+            raise IntegrityError("The decrypted data size is larger than the encrypted data.")
         iv = self._read_iv()
         cipher = Cipher(self.algorithm, modes.CBC(iv))  # Create the cipher context
         cipher_context = cipher.decryptor()
@@ -476,7 +488,7 @@ class Decryptor:
             data_to_read = min(WORKING_BLOCK_SIZE, encrypted_data_left)
             encrypted_data = self.source_file_handle.read(data_to_read)
             if len(encrypted_data) < data_to_read:
-                raise IntegrityError('File is not complete.')
+                raise IntegrityError("File is not complete.")
             decrypted_data = cipher_context.update(encrypted_data)
             if decrypted_data_left < len(decrypted_data):
                 decrypted_data = decrypted_data[:decrypted_data_left]
@@ -503,20 +515,20 @@ class Decryptor:
         """
         self.source_file_handle = source_io
         self._read_and_verify_file_header()
-        self._skip_block(b'META')
-        self._skip_block(b'MDHA')
+        self._skip_block(b"META")
+        self._skip_block(b"MDHA")
         block_type, encrypted_block_size = self._read_block_header()
-        if block_type != b'DATA':
-            raise IntegrityError('Expected `DATA` block, but found another one.')
+        if block_type != b"DATA":
+            raise IntegrityError("Expected `DATA` block, but found another one.")
         if encrypted_block_size == CHUNKED_BLOCK_SIZE_VALUE:
             data_digest = self._decrypt_chunked_block(destination_io)
         elif encrypted_block_size >= MAXIMUM_BLOCK_SIZE_VALUE:
-            raise IntegrityError('The block has an invalid size value.')
+            raise IntegrityError("The block has an invalid size value.")
         else:
             data_digest = self._decrypt_static_block(encrypted_block_size, destination_io)
-        file_digest = self._read_encrypted_block(b'DTHA')
+        file_digest = self._read_encrypted_block(b"DTHA")
         if file_digest != data_digest:
-            raise IntegrityError('The digest of the data block does not match.')
+            raise IntegrityError("The digest of the data block does not match.")
 
     def copy_decrypted(self, source: Path, destination: Path):
         """
@@ -527,17 +539,17 @@ class Decryptor:
         :raises IntegrityError: On any file integrity problem.
         """
         if not source:
-            raise ValueError('Missing parameter `source`')
+            raise ValueError("Missing parameter `source`")
         if not destination:
-            raise ValueError('Missing parameter `destination`')
+            raise ValueError("Missing parameter `destination`")
         if not isinstance(source, Path):
-            raise ValueError('Parameter `source` has to be a `Path` from `pathlib`.')
+            raise ValueError("Parameter `source` has to be a `Path` from `pathlib`.")
         if not isinstance(destination, Path):
-            raise ValueError('Parameter `destination` has to be a `Path` from `pathlib`.')
+            raise ValueError("Parameter `destination` has to be a `Path` from `pathlib`.")
         if (file_size := source.stat().st_size) < 256:
-            raise IntegrityError(f'File is too short to be valid. (size={file_size})')
+            raise IntegrityError(f"File is too short to be valid. (size={file_size})")
         try:
-            with source.open('rb') as source_io, destination.open('wb') as destination_io:
+            with source.open("rb") as source_io, destination.open("wb") as destination_io:
                 self._decrypt_stream(source_io, destination_io)
         except IntegrityError:
             destination.unlink(missing_ok=True)
@@ -554,11 +566,11 @@ class Decryptor:
         :param destination_io: The open destination stream.
         """
         if not source_io:
-            raise ValueError('Missing parameter `source_io`')
+            raise ValueError("Missing parameter `source_io`")
         if not destination_io:
-            raise ValueError('Missing parameter `destination_io`')
+            raise ValueError("Missing parameter `destination_io`")
         if not isinstance(source_io, io.BufferedIOBase):
-            raise ValueError('The parameter `source_io` has to be a subclass of `io.BufferedIOBase`')
+            raise ValueError("The parameter `source_io` has to be a subclass of `io.BufferedIOBase`")
         if not isinstance(destination_io, io.BufferedIOBase):
-            raise ValueError('The parameter `destination_io` has to be a subclass of `io.BufferedIOBase`')
+            raise ValueError("The parameter `destination_io` has to be a subclass of `io.BufferedIOBase`")
         self._decrypt_stream(source_io, destination_io)
