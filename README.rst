@@ -1,68 +1,80 @@
 Fast File Encryption
-======================
+====================
 
-The *Fast File Encryption* is an open, very simple and well-designed file encryption solution for medium and large files (up to terabytes). It uses asymmetric RSA keys to encrypt and decrypt the files, in order to store the public key for encryption on the server, with no worries.
+**Fast File Encryption** is a lightweight, robust, and developer-friendly solution for encrypting large files—ranging from a few megabytes to several terabytes—securely and efficiently.
 
-Quick Usage Overview
---------------------
+Ideal for environments that require:
 
-Create a new key pair:
+- Minimal runtime dependencies
+- Strong asymmetric encryption using RSA
+- High performance for both small and large files
 
-.. code-block:: pycon
+Features
+--------
 
-    >>> import fast_file_encryption as ffe
-    >>> from pathlib import Path
-    >>> ffe.save_key_pair(public_key=Path('public.pem'), private_key=Path('private.pem'))
+- Requires only Python ≥ 3.11 and the ``cryptography`` package
+- Securely encrypts and decrypts files using RSA public/private key pairs
+- Only the **public key** is needed on the server—no private key exposure
+- Supports streaming and large file encryption (up to 10 TB and beyond)
 
-Encrypt a file:
+Getting Started 🚀
+------------------
 
-.. code-block:: pycon
+New to the project? Start with our step-by-step **Getting Started Guide**. It walks you through installation, key generation, and your first file encryption.
 
-    >>> original_file = Path('original_file.txt')
-    >>> original_file.write_text('Hello world!')
-    >>> encryptor = ffe.Encryptor(ffe.read_public_key(Path('public.pem')))
-    >>> encrypted_file = Path('encrypted_file.ffe')
-    >>> encryptor.copy_encrypted(original_file, encrypted_file, meta={'my-meta': 1}, add_source_metadata=True)
+▶️ [Getting Started](https://erbsland-dev.github.io/fast-file-encryption/chapters/get-started.html)
 
-Decrypt a file and read its meta data:
+Documentation 📚
+----------------
 
-.. code-block:: pycon
+Explore the full documentation:
 
-    >>> decryptor = ffe.Decryptor(ffe.read_private_key(Path('private.pem')))
-    >>> decryptor.load_decrypted(encrypted_file)
-    b'Hello world!'
-    >>> decryptor.read_metadata(encrypted_file)
-    {'my-meta': 1, 'file_path': '.../original_file.txt', ...}
+* In-depth reference for encryption and decryption classes
+* Key management tools and utilities
+* Technical details of the file format
 
-Installation
+▶️ [Reference Manual](https://erbsland-dev.github.io/fast-file-encryption/chapters/reference/)
+
+▶️ [File Format Specification](https://erbsland-dev.github.io/fast-file-encryption/format.html)
+
+Requirements
 ------------
 
-Install *Fast File Encryption* using ``pip``:
+* Python ≥ 3.11
+* `cryptography` package (based on OpenSSL)
 
-.. code-block:: console
-
-    $ pip install fast_file_encryption
-
-Documentation
+Project Goals
 -------------
 
-You find all details about the library, it's design and file format in the `documentation`_.
+**Fast File Encryption** is built with the following principles:
 
+* **Archive Data** — Designed to securely archive files.
+* **Secure by Default** — No configurable options that weaken encryption.
+* **Large File Support** — Optimized for files up to several terabytes.
+* **Metadata Block** — Clean separation of encrypted metadata.
+* **No Key = No Access** — Data remains safe even if a server is compromised.
+* **Corruption Detection** — Built-in checksums detect silent corruption.
+
+▶️ [More about our design goals](https://erbsland-dev.github.io/fast-file-encryption/goals.html)
+
+Bug Reports & Feature Requests
+------------------------------
+
+Have feedback or ideas? Found a bug? We'd love to hear from you.
+
+▶️ [Submit an Issue](https://github.com/erbsland-dev/fast-file-encryption/issues)
 
 License
 -------
 
-Copyright © 2021-2024 Tobias Erbsland https://erbsland.dev/ and EducateIT GmbH https://educateit.ch/
+Copyright © 2021–2024
+Tobias Erbsland – https://erbsland.dev/
+EducateIT GmbH – https://educateit.ch/
 
-According to the copyright terms specified in the file "COPYRIGHT.md".
+Licensed under the **Apache License, Version 2.0**.
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+You may obtain a copy of the license at:
 
 http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
-
-.. _`documentation`: https://erbsland-dev.github.io/fast-file-encryption/
-
-
+Distributed on an “AS IS” basis, without warranties or conditions of any kind. See the LICENSE file for details.

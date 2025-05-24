@@ -1,70 +1,65 @@
-Welcome to Fast File Encryption
-===============================
+Welcome to the Fast File Encryption Documentation!
+==================================================
 
-The *Fast File Encryption* is an open, very simple and well-designed file encryption solution for medium and large
-files (up to terabytes). It uses asymmetric RSA keys to encrypt and decrypt the files, in order to store the public key
-for encryption on the server, with no worries.
+Welcome! This documentation will guide you through using **Fast File Encryption**, a lightweight, robust, and developer-friendly solution for encrypting large files—ranging from a few megabytes up to several terabytes—safe and easy.
 
-Quickstart
-----------
+Fast File Encryption is ideal for environments that need:
 
-Create a new key pair:
+* Minimal runtime dependencies
+* Strong security using asymmetric RSA encryption
+* High performance for both small and large files
 
-.. code-block:: pycon
+Whether you're new to the project or returning to explore specific implementation details, you're in the right place.
 
-    >>> import fast_file_encryption as ffe
-    >>> from pathlib import Path
-    >>> ffe.save_key_pair(public_key=Path('public.pem'), private_key=Path('private.pem'))
+.. grid:: 2
 
-Encrypt a file:
+    .. grid-item-card:: Minimal Dependencies
+        :class-card: sd-text-center sd-p-3 sd-mb-3
 
-.. code-block:: pycon
+        Requires only Python ≥ 3.11 and the ``cryptography`` package.
 
-    >>> original_file = Path('original_file.txt')
-    >>> original_file.write_text('Hello world!')
-    >>> encryptor = ffe.Encryptor(ffe.read_public_key(Path('public.pem')))
-    >>> encrypted_file = Path('encrypted_file.ffe')
-    >>> encryptor.copy_encrypted(original_file, encrypted_file, meta={'my-meta': 1}, add_source_metadata=True)
+    .. grid-item-card:: Reliable RSA Encryption
+        :class-card: sd-text-center sd-p-3 sd-mb-3
 
-Decrypt a file and read its meta data:
+        Securely encrypts and decrypts files using public/private RSA key pairs.
 
-.. code-block:: pycon
+    .. grid-item-card:: Server-Side Public Key Support
+        :class-card: sd-text-center sd-p-3 sd-mb-3
 
-    >>> decryptor = ffe.Decryptor(ffe.read_private_key(Path('private.pem')))
-    >>> decryptor.load_decrypted(encrypted_file)
-    b'Hello world!'
-    >>> decryptor.read_metadata(encrypted_file)
-    {'my-meta': 1, 'file_path': '.../original_file.txt', ...}
+        Store only the public key on the server—no private key exposure needed.
 
-Installation
-------------
+    .. grid-item-card:: Built for Large Files
+        :class-card: sd-text-center sd-p-3 sd-mb-3
 
-Install *Fast File Encryption* using ``pip``:
+        Efficiently handles files of virtually any size—from kilobytes to terabytes.
 
-.. code-block:: console
+.. button-ref:: chapters/get-started
+    :ref-type: doc
+    :color: success
+    :align: center
+    :expand:
+    :class: sd-fs-2 sd-font-weight-bold sd-p-3
 
-    $ pip install fast_file_encryption
+    Get Started →
 
-Reference Documentation
------------------------
-
-.. toctree::
-    :maxdepth: 2
-    :caption: API Reference
-
-    encryptor
-    decryptor
-    errors
-    tools
+Already familiar? Dive directly into key areas of the library:
 
 .. toctree::
     :maxdepth: 2
     :caption: About the Library
 
-    design
-    format
+    chapters/get-started
+    chapters/reference/index
+    chapters/format
+    chapters/design
+    chapters/goals
+    chapters/used-algorithms
+    chapters/file-sizes
+    chapters/contributing
+    chapters/code-of-conduct
+    chapters/license
 
-Indices and tables
+Indices and Tables
 ------------------
 
 * :ref:`genindex`

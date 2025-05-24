@@ -11,7 +11,7 @@ jobs:
       - uses: actions/setup-python@v3
       - name: Install Sphinx
         run: |
-          pip install sphinx sphinx-rtd-theme cryptography
+          pip install sphinx sphinx-rtd-theme sphinx-design cryptography
       - name: Build documentation
         run: |
           sphinx-build docs _build
