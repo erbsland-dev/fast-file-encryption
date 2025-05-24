@@ -4,8 +4,13 @@
 
 
 from pathlib import Path
+import sys
 
 import pytest
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+SRC_PATH = ROOT_DIR / "src"
+sys.path.insert(0, str(SRC_PATH))
 
 from fast_file_encryption import read_public_key, read_private_key
 
@@ -15,19 +20,19 @@ test_private_key = None  # Cache the private key to speedup tests
 
 @pytest.fixture(scope="module")
 def public_key():
-    return read_public_key(Path(__file__).parent / 'keys' / 'test_public_key.pem')
+    return read_public_key(Path(__file__).parent / "keys" / "test_public_key.pem")
 
 
 @pytest.fixture(scope="module")
 def private_key():
-    return read_private_key(Path(__file__).parent / 'keys' / 'test_private_key.pem')
+    return read_private_key(Path(__file__).parent / "keys" / "test_private_key.pem")
 
 
 @pytest.fixture(scope="module")
 def data_dir():
-    return Path(__file__).parent / 'data'
+    return Path(__file__).parent / "data"
 
 
 @pytest.fixture(scope="module")
 def keys_dir():
-    return Path(__file__).parent / 'keys'
+    return Path(__file__).parent / "keys"

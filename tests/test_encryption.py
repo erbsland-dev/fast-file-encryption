@@ -6,8 +6,9 @@
 import itertools
 import random
 
+import pytest
+
 from fast_file_encryption import Encryptor, Decryptor, IntegrityError, DataTooLargeError
-from shared import *
 
 
 class TestEncryption:
@@ -17,7 +18,7 @@ class TestEncryption:
         Test if a prepared empty file can be decrypted.
         """
         decryptor = Decryptor(private_key=private_key)
-        decrypted_data = decryptor.load_decrypted(source=data_dir / 'empty.ffe')
+        decrypted_data = decryptor.load_decrypted(source=data_dir / "empty.ffe")
         assert len(decrypted_data) == 0
 
     def test_decrypt_empty_data_into_file(self, private_key, data_dir, tmp_path):
@@ -25,8 +26,8 @@ class TestEncryption:
         Test if a prepared empty file can be decrypted.
         """
         decryptor = Decryptor(private_key=private_key)
-        target_path = tmp_path / 'target.data'
-        decryptor.copy_decrypted(source=data_dir / 'empty.ffe', destination=target_path)
+        target_path = tmp_path / "target.data"
+        decryptor.copy_decrypted(source=data_dir / "empty.ffe", destination=target_path)
         decrypted_data = target_path.read_bytes()
         assert len(decrypted_data) == 0
 
@@ -35,7 +36,7 @@ class TestEncryption:
         Test if a prepared file can be decrypted.
         """
         decryptor = Decryptor(private_key=private_key)
-        decrypted_data = decryptor.load_decrypted(source=data_dir / '10k-zero.ffe')
+        decrypted_data = decryptor.load_decrypted(source=data_dir / "10k-zero.ffe")
         assert len(decrypted_data) == 10000
         assert decrypted_data == bytes(10000)
 
@@ -44,8 +45,8 @@ class TestEncryption:
         Test if a prepared file can be decrypted.
         """
         decryptor = Decryptor(private_key=private_key)
-        target_path = tmp_path / 'target.data'
-        decryptor.copy_decrypted(source=data_dir / '10k-zero.ffe', destination=target_path)
+        target_path = tmp_path / "target.data"
+        decryptor.copy_decrypted(source=data_dir / "10k-zero.ffe", destination=target_path)
         decrypted_data = target_path.read_bytes()
         assert len(decrypted_data) == 10000
         assert decrypted_data == bytes(10000)
@@ -54,9 +55,9 @@ class TestEncryption:
         """
         Test if a prepared file can be decrypted.
         """
-        original_data = (data_dir / '8k-random.data').read_bytes()
+        original_data = (data_dir / "8k-random.data").read_bytes()
         decryptor = Decryptor(private_key=private_key)
-        decrypted_data = decryptor.load_decrypted(source=data_dir / '8k-random.ffe')
+        decrypted_data = decryptor.load_decrypted(source=data_dir / "8k-random.ffe")
         assert len(decrypted_data) == 8000
         assert decrypted_data == original_data
 
@@ -64,10 +65,10 @@ class TestEncryption:
         """
         Test if a prepared file can be decrypted into a file
         """
-        original_data = (data_dir / '8k-random.data').read_bytes()
+        original_data = (data_dir / "8k-random.data").read_bytes()
         decryptor = Decryptor(private_key=private_key)
-        target_path = tmp_path / 'target.data'
-        decryptor.copy_decrypted(source=data_dir / '8k-random.ffe', destination=target_path)
+        target_path = tmp_path / "target.data"
+        decryptor.copy_decrypted(source=data_dir / "8k-random.ffe", destination=target_path)
         decrypted_data = target_path.read_bytes()
         assert len(decrypted_data) == 8000
         assert decrypted_data == original_data
@@ -76,7 +77,7 @@ class TestEncryption:
         """
         Test if an empty file is correctly encrypted and decrypted.
         """
-        stored_file_path = tmp_path / 'empty.data'
+        stored_file_path = tmp_path / "empty.data"
         encryptor = Encryptor(public_key=public_key)
         encryptor.save_encrypted(source_data=bytes(), destination=stored_file_path)
         decryptor = Decryptor(private_key=private_key)
@@ -89,8 +90,8 @@ class TestEncryption:
         """
         encryptor = Encryptor(public_key=public_key)
         decryptor = Decryptor(private_key=private_key)
-        stored_file_path = tmp_path / 'data.ffe'
-        data_file_path = tmp_path / 'random.data'
+        stored_file_path = tmp_path / "data.ffe"
+        data_file_path = tmp_path / "random.data"
         random.seed(600)  # Use a fixed seed to make this test repeatable
         for _ in range(50):
             data = random.randbytes(random.randint(1, 10000))
@@ -100,11 +101,10 @@ class TestEncryption:
             assert decrypted_data == data
             stored_file_path.unlink(missing_ok=True)
             data_file_path.write_bytes(data)
-            meta = {
-                'test': 'metadata'
-            }
-            encryptor.copy_encrypted(source=data_file_path, destination=stored_file_path,
-                                     meta=meta, add_source_metadata=True)
+            meta = {"test": "metadata"}
+            encryptor.copy_encrypted(
+                source=data_file_path, destination=stored_file_path, meta=meta, add_source_metadata=True
+            )
             decrypted_data = decryptor.load_decrypted(source=stored_file_path)
             assert len(decrypted_data) == len(data)
             assert decrypted_data == data
@@ -115,9 +115,9 @@ class TestEncryption:
         Test if single bit flips are detected.
         """
         decryptor = Decryptor(private_key=private_key)
-        file_path = tmp_path / 'data.ffe'
-        decrypted_file = tmp_path / 'decrypted.data'
-        random_file_data = (data_dir / '8k-random.ffe').read_bytes()
+        file_path = tmp_path / "data.ffe"
+        decrypted_file = tmp_path / "decrypted.data"
+        random_file_data = (data_dir / "8k-random.ffe").read_bytes()
         for i in range(0x200):
             data = bytearray(random_file_data)
             pos = i // 8
@@ -144,9 +144,9 @@ class TestEncryption:
 
     def test_incomplete_files(self, private_key, tmp_path, data_dir):
         decryptor = Decryptor(private_key=private_key)
-        file_path = tmp_path / 'data.ffe'
-        decrypted_file = tmp_path / 'decrypted.data'
-        random_file_data = (data_dir / '8k-random.ffe').read_bytes()
+        file_path = tmp_path / "data.ffe"
+        decrypted_file = tmp_path / "decrypted.data"
+        random_file_data = (data_dir / "8k-random.ffe").read_bytes()
         for i in range(0x100, 0x300):  # files shorter than 256 bytes are handled specially, test critical range
             data = bytearray(random_file_data[:i])
             file_path.write_bytes(data)
@@ -157,7 +157,7 @@ class TestEncryption:
             file_path.unlink(missing_ok=True)
         random.seed(900)
         for _ in range(50):  # Test a number of random sizes cover more cases
-            data = bytearray(random_file_data[:random.randint(1, len(random_file_data) - 1)])
+            data = bytearray(random_file_data[: random.randint(1, len(random_file_data) - 1)])
             file_path.write_bytes(data)
             with pytest.raises(IntegrityError):
                 decryptor.load_decrypted(source=file_path)
@@ -170,7 +170,7 @@ class TestEncryption:
         Test is the maximum size for load data is respected.
         """
         decryptor = Decryptor(private_key=private_key)
-        random_file = data_dir / '8k-random.ffe'
+        random_file = data_dir / "8k-random.ffe"
         with pytest.raises(DataTooLargeError):
             decryptor.load_decrypted(source=random_file, maximum_size=(8000 - 128))
         with pytest.raises(DataTooLargeError):
@@ -181,19 +181,19 @@ class TestEncryption:
         Test if a wrong block order is detected.
         """
         decryptor = Decryptor(private_key=private_key)
-        random_file_data = (data_dir / '8k-random.ffe').read_bytes()
-        file_path = tmp_path / 'data.ffe'
-        decrypted_file = tmp_path / 'decrypted.data'
+        random_file_data = (data_dir / "8k-random.ffe").read_bytes()
+        file_path = tmp_path / "data.ffe"
+        decrypted_file = tmp_path / "decrypted.data"
         # Split the file into its blocks.
         pos = 8
         magic = random_file_data[:pos]
         blocks = []
         while pos < len(random_file_data):
-            block_size = int.from_bytes(random_file_data[pos + 4:pos + 12], byteorder='big', signed=False)
-            blocks.append(random_file_data[pos:pos + 12 + block_size])
-            pos += (12 + block_size)
+            block_size = int.from_bytes(random_file_data[pos + 4 : pos + 12], byteorder="big", signed=False)
+            blocks.append(random_file_data[pos : pos + 12 + block_size])
+            pos += 12 + block_size
         # Make sure our test is working properly.
-        with file_path.open('wb') as f:
+        with file_path.open("wb") as f:
             f.write(magic)
             for d in blocks:
                 f.write(d)
@@ -203,7 +203,7 @@ class TestEncryption:
         for a, b in itertools.combinations(list(range(len(blocks))), 2):
             swapped = blocks.copy()
             swapped[a], swapped[b] = swapped[b], swapped[a]
-            with file_path.open('wb') as f:
+            with file_path.open("wb") as f:
                 f.write(magic)
                 for d in swapped:
                     f.write(d)
@@ -218,8 +218,8 @@ class TestEncryption:
         Test if we can decrypt a file which was encrypted with the wrong key.
         """
         decryptor = Decryptor(private_key=private_key)
-        decrypted_file = tmp_path / 'decrypted.data'
+        decrypted_file = tmp_path / "decrypted.data"
         with pytest.raises(IntegrityError):
-            decryptor.load_decrypted(source=data_dir / '8k-random-2nd-key.ffe')
+            decryptor.load_decrypted(source=data_dir / "8k-random-2nd-key.ffe")
         with pytest.raises(IntegrityError):
-            decryptor.copy_decrypted(source=data_dir / '8k-random-2nd-key.ffe', destination=decrypted_file)
+            decryptor.copy_decrypted(source=data_dir / "8k-random-2nd-key.ffe", destination=decrypted_file)

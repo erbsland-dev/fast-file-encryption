@@ -8,7 +8,7 @@ This module contains useful tools to work with this library.
 """
 
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, TypeAlias
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -17,43 +17,49 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey, RSAPriva
 from .internals import RSA_KEY_SIZE
 
 
-def read_public_key(public_key: Union[Path, str, bytes]) -> RSAPublicKey:
-    """
-    Read the public key from a file.
+KeyInput: TypeAlias = Path | str | bytes
 
-    :param public_key: The public key as `Path`, string or bytes object.
+
+def _input_to_bytes(key_input: KeyInput) -> bytes:
+    """Return the input converted to ``bytes``.
+
+    :param key_input: The input as :class:`pathlib.Path`, ``str`` or ``bytes``.
+    :raises ValueError: If the input type is not supported.
+    """
+    match key_input:
+        case Path():
+            return key_input.read_bytes()
+        case str():
+            return key_input.encode("utf-8")
+        case bytes() as data:
+            return data
+        case _:
+            raise ValueError("Key must be a `Path`, string or bytes object.")
+
+
+def read_public_key(public_key: KeyInput) -> RSAPublicKey:
+    """
+    Read the public key from a file, bytes or string.
+
+    :param public_key: The public key as :class:`pathlib.Path`, ``str`` or ``bytes`` object.
     :return: The public key as object to be used with the file encryption.
     """
-    if isinstance(public_key, Path):
-        data = public_key.read_bytes()
-    elif isinstance(public_key, str):
-        data = public_key.encode('utf-8')
-    elif isinstance(public_key, bytes):
-        data = public_key
-    else:
-        raise ValueError('Public key has to be a `Path`, string or bytes object.')
+    data = _input_to_bytes(public_key)
     key = serialization.load_pem_public_key(data)
     if not isinstance(key, RSAPublicKey):
         raise ValueError('The data does not contain a public RSA key.')
     return key
 
 
-def read_private_key(private_key: Union[Path, str, bytes], password: Optional[bytes] = None) -> RSAPrivateKey:
+def read_private_key(private_key: KeyInput, password: Optional[bytes] = None) -> RSAPrivateKey:
     """
-    Read the private key from a file or string.
+    Read the private key from a file, bytes or string.
 
-    :param private_key: The private key as `Path`, string or bytes object.
+    :param private_key: The private key as :class:`pathlib.Path`, ``str`` or ``bytes`` object.
     :param password: An optional password to decrypt the key.
-    :return: The private key usable for the file decription.
+    :return: The private key usable for the file decryption.
     """
-    if isinstance(private_key, Path):
-        data = private_key.read_bytes()
-    elif isinstance(private_key, str):
-        data = private_key.encode('utf-8')
-    elif isinstance(private_key, bytes):
-        data = private_key
-    else:
-        raise ValueError('Private key has to be a `Path`, string or bytes object.')
+    data = _input_to_bytes(private_key)
     key = serialization.load_pem_private_key(data, password=password)
     if not isinstance(key, RSAPrivateKey):
         raise ValueError('The data does not contain a private RSA key.')

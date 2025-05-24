@@ -453,8 +453,10 @@ class Decryptor:
         :param destination: The destination stream to write the decrypted data.
         :return: The digest of the decrypted data.
         """
-        if encrypted_block_size > (FILE_SIZE_LIMIT + 1000):  # > 10TB?
-            raise IntegrityError('The file size is larger than 10TB, which is not supported.')
+        if encrypted_block_size > (FILE_SIZE_LIMIT + 1000):  # exceeds supported size
+            max_tb = FILE_SIZE_LIMIT / 1_000_000_000_000
+            raise IntegrityError(
+                f'The file size is larger than {max_tb:.0f}TB, which is not supported.')
         if encrypted_block_size == 0:
             return b''  # Empty data requires an empty digest.
         block_hash_context = hashlib.sha3_512()

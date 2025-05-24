@@ -43,6 +43,15 @@ Requirements
 * Python ≥ 3.11
 * `cryptography` package (based on OpenSSL)
 
+Running the Tests
+-----------------
+
+Install the dependencies from ``requirements.txt`` and execute ``pytest`` from
+the project root::
+
+    pip install -r requirements.txt
+    pytest
+
 Project Goals
 -------------
 

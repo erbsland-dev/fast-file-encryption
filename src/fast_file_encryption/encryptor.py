@@ -397,7 +397,8 @@ class Encryptor:
         :param add_source_metadata: Include the metadata for the given source file.
             This includes the fields `file_path`, `file_name`, `file_size`, `created`, `modified`.
             Only missing fields are added to the metadata.
-        :raises DataTooLargeError: If the source file exceeds the maximum file size limit of 10 TB.
+        :raises DataTooLargeError: If the source file exceeds the maximum file size limit
+            defined by ``FILE_SIZE_LIMIT``.
         """
         if not isinstance(source, Path):
             raise ValueError('`source` has to be a `Path` from pathlib.')
@@ -408,7 +409,9 @@ class Encryptor:
         self._verify_metadata(meta)
         source_file_size = source.stat().st_size
         if source_file_size > FILE_SIZE_LIMIT:
-            raise DataTooLargeError('File sizes larger than 1TB are not supported.')
+            max_tb = FILE_SIZE_LIMIT / 1_000_000_000_000
+            raise DataTooLargeError(
+                f'File sizes larger than {max_tb:.0f}TB are not supported.')
         with source.open('rb') as source_file_handle, destination.open('wb') as destination_file_handle:
             self.destination_file_digest = hashlib.sha3_512()
             self.destination_file_handle = destination_file_handle
