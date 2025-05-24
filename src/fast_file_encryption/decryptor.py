@@ -41,11 +41,12 @@ class Decryptor:
     The encryptor provides methods to encrypt files.
     """
 
-    def __init__(self, private_key: RSAPrivateKey):
+    def __init__(self, private_key: RSAPrivateKey, verify_file_digest: bool = False):
         """
         Create a new decryptor object.
 
         :param private_key: The private key to use for decryption.
+        :param verify_file_digest: Verify the final file digest (slower for large files).
         """
         self.private_key = private_key  # The public key for the encryption.
         self.source_file_handle: Optional[io.BufferedIOBase] = None  # The current source file handle.
@@ -56,12 +57,24 @@ class Decryptor:
         ).digest()
         # Cache for chunked reads
         self._current_chunk_size = 0
+        # Digest of the processed input file up to the ENDH block
+        self._file_digest: Optional[hashlib._Hash] = None
+        self.verify_file_digest = verify_file_digest
+
+    def _read_with_digest(self, size: int) -> bytes:
+        """
+        Read bytes from the current source and update the file digest.
+        """
+        data = self.source_file_handle.read(size)
+        if self._file_digest is not None and data:
+            self._file_digest.update(data)
+        return data
 
     def _verify_magic(self):
         """
         Verify the magic of the file.
         """
-        file_magic = self.source_file_handle.read(len(FILE_MAGIC))
+        file_magic = self._read_with_digest(len(FILE_MAGIC))
         if file_magic != FILE_MAGIC:
             raise IntegrityError("File magic does not match.")
 
@@ -71,7 +84,7 @@ class Decryptor:
 
         :return: The block type.
         """
-        block_type = self.source_file_handle.read(4)
+        block_type = self._read_with_digest(4)
         if len(block_type) < 4:
             raise IntegrityError("File is not complete.")
         if block_type not in KNOWN_BLOCK_TYPES:
@@ -85,7 +98,7 @@ class Decryptor:
         :raises IntegrityError: If there is not enough data for the size.
         :return: The block size.
         """
-        size_data = self.source_file_handle.read(SIZE_VALUE_LENGTH)
+        size_data = self._read_with_digest(SIZE_VALUE_LENGTH)
         if len(size_data) < SIZE_VALUE_LENGTH:
             raise IntegrityError("File is not complete.")
         return int.from_bytes(size_data, byteorder=SIZE_ENDIANNESS, signed=False)
@@ -97,7 +110,7 @@ class Decryptor:
         :raises IntegrityError: If there is not enough data for the size.
         :return: The chunk size.
         """
-        size_data = self.source_file_handle.read(CHUNK_SIZE_LENGTH)
+        size_data = self._read_with_digest(CHUNK_SIZE_LENGTH)
         if len(size_data) < CHUNK_SIZE_LENGTH:
             raise IntegrityError("File is not complete.")
         return int.from_bytes(size_data, byteorder=SIZE_ENDIANNESS, signed=False)
@@ -108,7 +121,7 @@ class Decryptor:
 
         :return: The IV
         """
-        iv = self.source_file_handle.read(AES_IV_LENGTH_BYTES)
+        iv = self._read_with_digest(AES_IV_LENGTH_BYTES)
         if len(iv) != AES_IV_LENGTH_BYTES:
             raise IntegrityError("File is not complete.")
         return iv
@@ -131,19 +144,19 @@ class Decryptor:
         if self._current_chunk_size == 0:  # Set the block to zero if we reached the end.
             return b""
         if maximum_bytes_to_read < self._current_chunk_size:
-            block = self.source_file_handle.read(maximum_bytes_to_read)
+            block = self._read_with_digest(maximum_bytes_to_read)
             if len(block) < maximum_bytes_to_read:
                 raise IntegrityError("File is not complete.")
             self._current_chunk_size -= len(block)
         else:
-            block = bytearray(self.source_file_handle.read(self._current_chunk_size))
+            block = bytearray(self._read_with_digest(self._current_chunk_size))
             if len(block) < self._current_chunk_size:
                 raise IntegrityError("File is not complete.")
             self._current_chunk_size = self._read_chunk_size()
             maximum_bytes_to_read -= len(block)
             while self._current_chunk_size > 0 and maximum_bytes_to_read > 0:
                 bytes_to_read = min(self._current_chunk_size, maximum_bytes_to_read)
-                data = self.source_file_handle.read(bytes_to_read)
+                data = self._read_with_digest(bytes_to_read)
                 if len(data) < bytes_to_read:
                     raise IntegrityError("File is not complete.")
                 self._current_chunk_size -= bytes_to_read
@@ -167,7 +180,7 @@ class Decryptor:
                 if user_limit:
                     raise DataTooLargeError("The data exceeds the requested limit.")
                 raise IntegrityError("A block exceeds the size limit.")
-            data_chunk = self.source_file_handle.read(chunk_size)
+            data_chunk = self._read_with_digest(chunk_size)
             if len(data_chunk) < chunk_size:
                 raise IntegrityError("File is not complete.")
             data.extend(data_chunk)
@@ -186,7 +199,7 @@ class Decryptor:
             if user_limit:
                 raise DataTooLargeError("The data exceeds the requested limit.")
             raise IntegrityError("A block exceeds the size limit.")
-        block_data = self.source_file_handle.read(block_size)
+        block_data = self._read_with_digest(block_size)
         if len(block_data) < block_size:
             raise IntegrityError("File is not complete.")
         return block_data
@@ -400,6 +413,7 @@ class Decryptor:
             raise IntegrityError(f"File is too short to be valid. (size={file_size})")
         with source.open("rb") as source_file_handle:
             self.source_file_handle = source_file_handle
+            self._file_digest = hashlib.sha3_512() if self.verify_file_digest else None
             self._read_and_verify_file_header()
             self._skip_block(b"META")
             self._skip_block(b"MDHA")
@@ -407,6 +421,8 @@ class Decryptor:
                 b"DATA", maximum_size=maximum_size + AES_BLOCK_SIZE_BYTES, user_limit=True
             )
             file_digest = self._read_encrypted_block(b"DTHA")
+            if self.verify_file_digest:
+                self._verify_end_block()
         if not decrypted_data:  # Zero file?
             if file_digest:
                 raise IntegrityError("The digest of the data block does not match.")
@@ -486,7 +502,7 @@ class Decryptor:
         decrypted_data_left = decrypted_size
         while encrypted_data_left > 0:
             data_to_read = min(WORKING_BLOCK_SIZE, encrypted_data_left)
-            encrypted_data = self.source_file_handle.read(data_to_read)
+            encrypted_data = self._read_with_digest(data_to_read)
             if len(encrypted_data) < data_to_read:
                 raise IntegrityError("File is not complete.")
             decrypted_data = cipher_context.update(encrypted_data)
@@ -514,6 +530,7 @@ class Decryptor:
         :param destination_io: The destination stream to write the decrypted data into
         """
         self.source_file_handle = source_io
+        self._file_digest = hashlib.sha3_512() if self.verify_file_digest else None
         self._read_and_verify_file_header()
         self._skip_block(b"META")
         self._skip_block(b"MDHA")
@@ -529,6 +546,28 @@ class Decryptor:
         file_digest = self._read_encrypted_block(b"DTHA")
         if file_digest != data_digest:
             raise IntegrityError("The digest of the data block does not match.")
+
+        if self.verify_file_digest:
+            self._verify_end_block()
+
+    def _verify_end_block(self):
+        """Read and verify the final ENDH block."""
+
+        block_type = self.source_file_handle.read(4)
+        if block_type != b"ENDH":
+            raise IntegrityError("Expected `ENDH` block, but found another.")
+        size_data = self.source_file_handle.read(SIZE_VALUE_LENGTH)
+        if len(size_data) < SIZE_VALUE_LENGTH:
+            raise IntegrityError("File is not complete.")
+        block_size = int.from_bytes(size_data, byteorder=SIZE_ENDIANNESS, signed=False)
+        if block_size != 64:
+            raise IntegrityError("The ENDH block has an invalid size.")
+        end_digest = self.source_file_handle.read(block_size)
+        if len(end_digest) < block_size:
+            raise IntegrityError("File is not complete.")
+        if self._file_digest is None or end_digest != self._file_digest.digest():
+            raise IntegrityError("The final file digest does not match.")
+        self._file_digest = None
 
     def copy_decrypted(self, source: Path, destination: Path):
         """

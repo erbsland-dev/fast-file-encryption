@@ -21,12 +21,14 @@ The example below shows how to decrypt a file and read its metadata:
 
 .. currentmodule:: fast_file_encryption
 
-.. class:: Decryptor(private_key)
+.. class:: Decryptor(private_key, verify_file_digest = False)
 
     The `Decryptor` class provides all the core functionality required to decrypt files, data buffers, and streams.
 
     :param private_key: The private RSA key used for decryption.
     :type private_key: `RSAPrivateKey`
+    :param verify_file_digest: Flag, if file digest verification shall be enabled. Default is `False`.
+    :type verify_file_digest: bool
 
     .. method:: read_metadata(source)
 

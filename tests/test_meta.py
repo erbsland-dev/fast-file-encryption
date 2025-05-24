@@ -96,3 +96,59 @@ class TestMetadata:
 
         with pytest.raises(ffe.IntegrityError):
             decryptor.read_metadata(stored_file_path)
+
+    def test_add_source_metadata(self, tmp_path, public_key, private_key):
+        encryptor = Encryptor(public_key=public_key)
+        decryptor = Decryptor(private_key=private_key)
+        source_path = tmp_path / "source.data"
+        source_data = b"test data"
+        source_path.write_bytes(source_data)
+        destination_path = tmp_path / "encrypted.ffe"
+        meta = {"custom": "value"}
+        encryptor.copy_encrypted(
+            source=source_path,
+            destination=destination_path,
+            meta=meta,
+            add_source_metadata=True,
+        )
+        read_meta = decryptor.read_metadata(destination_path)
+        assert read_meta["custom"] == "value"
+        assert read_meta["file_name"] == source_path.name
+        assert read_meta["file_path"] == str(source_path.absolute())
+        assert read_meta["file_size"] == len(source_data)
+        assert "created" in read_meta
+        assert "modified" in read_meta
+
+    def test_add_source_metadata_no_overwrite(self, tmp_path, public_key, private_key):
+        encryptor = Encryptor(public_key=public_key)
+        decryptor = Decryptor(private_key=private_key)
+        source_path = tmp_path / "source.txt"
+        source_data = b"abc"
+        source_path.write_bytes(source_data)
+        destination_path = tmp_path / "encrypted.ffe"
+        meta = {
+            "file_name": "name.txt",
+            "file_size": 123,
+            "custom": "ok",
+        }
+        encryptor.copy_encrypted(
+            source=source_path,
+            destination=destination_path,
+            meta=meta,
+            add_source_metadata=True,
+        )
+        read_meta = decryptor.read_metadata(destination_path)
+        assert read_meta["file_name"] == "name.txt"
+        assert read_meta["file_size"] == 123
+        assert read_meta["custom"] == "ok"
+        assert "file_path" in read_meta
+        assert "created" in read_meta
+        assert "modified" in read_meta
+
+    def test_read_metadata_too_short(self, tmp_path, private_key):
+        decryptor = Decryptor(private_key=private_key)
+        short_file = tmp_path / "short.ffe"
+        short_file.write_bytes(b"x" * 100)
+        with pytest.raises(ffe.IntegrityError):
+            decryptor.read_metadata(short_file)
+
