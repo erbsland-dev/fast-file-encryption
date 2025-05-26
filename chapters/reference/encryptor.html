@@ -1,0 +1,233 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Encrypting Data &mdash; Fast File Encryption 1.2.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=a5753347"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Decrypting Data" href="decryptor.html" />
+    <link rel="prev" title="Reference Documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Fast File Encryption
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About the Library</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get-started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Encrypting Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fast_file_encryption.Encryptor"><code class="docutils literal notranslate"><span class="pre">Encryptor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#fast_file_encryption.Encryptor.save_encrypted"><code class="docutils literal notranslate"><span class="pre">Encryptor.save_encrypted()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fast_file_encryption.Encryptor.copy_encrypted"><code class="docutils literal notranslate"><span class="pre">Encryptor.copy_encrypted()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fast_file_encryption.Encryptor.stream_encrypted"><code class="docutils literal notranslate"><span class="pre">Encryptor.stream_encrypted()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="decryptor.html">Decrypting Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html">Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tools.html">Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../format.html">The File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../goals.html">Design Goals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../used-algorithms.html">Used Algorithms and Hashes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../file-sizes.html">File Sizes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code-of-conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Fast File Encryption</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Reference Documentation</a></li>
+      <li class="breadcrumb-item active">Encrypting Data</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/chapters/reference/encryptor.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="encrypting-data">
+<h1>Encrypting Data<a class="headerlink" href="#encrypting-data" title="Link to this heading"></a></h1>
+<p>Encrypting data with <em>Fast File Encryption</em> is straightforward and secure.
+All encryption operations are performed using a <strong>public RSA key</strong>, allowing you to share the encrypted files without exposing any private secrets.</p>
+<p>You can encrypt:</p>
+<ul class="simple">
+<li><p>Entire files and store them at a new destination</p></li>
+<li><p>Raw in-memory data (<cite>bytes</cite>)</p></li>
+<li><p>Streams (e.g., file-like objects or sockets)</p></li>
+</ul>
+<p>Below is a quick example demonstrating how to encrypt a file:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">fast_file_encryption</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ffe</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">original_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;original_file.txt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">original_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s1">&#39;Hello world!&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encryptor</span> <span class="o">=</span> <span class="n">ffe</span><span class="o">.</span><span class="n">Encryptor</span><span class="p">(</span><span class="n">ffe</span><span class="o">.</span><span class="n">read_public_key</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;public.pem&#39;</span><span class="p">)))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encrypted_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;encrypted_file.ffe&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encryptor</span><span class="o">.</span><span class="n">copy_encrypted</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">original_file</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">encrypted_file</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;my-meta&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="n">add_source_metadata</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>When encrypting multiple files, reuse the same <cite>Encryptor</cite> instance.
+Internally, it caches the public key hash to avoid recalculating it for each file.</p>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="fast_file_encryption.Encryptor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fast_file_encryption.</span></span><span class="sig-name descname"><span class="pre">Encryptor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">public_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fast_file_encryption.Encryptor" title="Link to this definition"></a></dt>
+<dd><p>The <cite>Encryptor</cite> class provides all core methods to securely encrypt byte sequences, files, and data streams.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>public_key</strong> (<cite>RSAPublicKey</cite>) – The RSA public key used for encryption.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="fast_file_encryption.Encryptor.save_encrypted">
+<span class="sig-name descname"><span class="pre">save_encrypted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fast_file_encryption.Encryptor.save_encrypted" title="Link to this definition"></a></dt>
+<dd><p>Encrypt a small byte buffer and store the result in a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_data</strong> (<em>bytes</em>) – The in-memory data to encrypt.</p></li>
+<li><p><strong>destination</strong> (<em>pathlib.Path</em>) – Target path for the encrypted file. It is recommended to use the <cite>.ffe</cite> suffix.</p></li>
+<li><p><strong>meta</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>any</em><em>]</em>) – Optional metadata dictionary stored alongside the encrypted data.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fast_file_encryption.Encryptor.copy_encrypted">
+<span class="sig-name descname"><span class="pre">copy_encrypted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_source_metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fast_file_encryption.Encryptor.copy_encrypted" title="Link to this definition"></a></dt>
+<dd><p>Encrypt a file and write the result to a new location.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>pathlib.Path</em>) – Path to the unencrypted input file.</p></li>
+<li><p><strong>destination</strong> (<em>pathlib.Path</em>) – Path to the output file (typically ending in <cite>.ffe</cite>).</p></li>
+<li><p><strong>meta</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>any</em><em>]</em>) – Optional dictionary with custom metadata.</p></li>
+<li><p><strong>add_source_metadata</strong> (<em>bool</em>) – <p>If set to <cite>True</cite>, the following metadata will be added automatically unless overridden:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_path</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_name</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_size</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">created</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">modified</span></code></p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="errors.html#fast_file_encryption.DataTooLargeError" title="fast_file_encryption.DataTooLargeError"><strong>DataTooLargeError</strong></a> – Raised if the file size exceeds 10 TB.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fast_file_encryption.Encryptor.stream_encrypted">
+<span class="sig-name descname"><span class="pre">stream_encrypted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_io</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_io</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fast_file_encryption.Encryptor.stream_encrypted" title="Link to this definition"></a></dt>
+<dd><p>Encrypt data read from a stream and write it to another stream.</p>
+<p>For small streams (less than ~4 KiB), the encryption is performed inline. Larger streams are encrypted using a chunked format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_io</strong> (<em>io.BufferedIOBase</em>) – Open input stream (must implement <cite>read()</cite>).</p></li>
+<li><p><strong>destination_io</strong> (<em>io.BufferedIOBase</em>) – Open output stream (must implement <cite>write()</cite>).</p></li>
+<li><p><strong>meta</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>any</em><em>]</em>) – Optional metadata dictionary.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p class="sd-text-center"><span class="sd-d-grid"><a class="sd-sphinx-override sd-btn sd-text-wrap sd-btn-primary sd-mt-5 sd-mb-5 sd-fs-5 sd-font-weight-bold sd-p-3 reference internal" href="decryptor.html"><span class="doc">Decrypting Data →</span></a></span></p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Reference Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="decryptor.html" class="btn btn-neutral float-right" title="Decrypting Data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2025, Tobias Erbsland and EducateIT GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

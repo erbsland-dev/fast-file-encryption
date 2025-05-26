@@ -1,0 +1,197 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tools &mdash; Fast File Encryption 1.2.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=a5753347"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="The File Format" href="../format.html" />
+    <link rel="prev" title="Exceptions" href="errors.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Fast File Encryption
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About the Library</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../get-started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Reference Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="encryptor.html">Encrypting Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decryptor.html">Decrypting Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html">Exceptions</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tools</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fast_file_encryption.read_public_key"><code class="docutils literal notranslate"><span class="pre">read_public_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fast_file_encryption.read_private_key"><code class="docutils literal notranslate"><span class="pre">read_private_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fast_file_encryption.save_key_pair"><code class="docutils literal notranslate"><span class="pre">save_key_pair()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../format.html">The File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../goals.html">Design Goals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../used-algorithms.html">Used Algorithms and Hashes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../file-sizes.html">File Sizes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code-of-conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Fast File Encryption</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Reference Documentation</a></li>
+      <li class="breadcrumb-item active">Tools</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/chapters/reference/tools.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tools">
+<h1>Tools<a class="headerlink" href="#tools" title="Link to this heading"></a></h1>
+<p>This module provides utility functions to simplify key management.</p>
+<p>We strongly recommend using these functions for reading and generating keys to ensure forward compatibility with future versions of the library. These tools abstract away common pitfalls and offer a clean interface for both file-based and in-memory key handling.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="fast_file_encryption.read_public_key">
+<span class="sig-prename descclassname"><span class="pre">fast_file_encryption.</span></span><span class="sig-name descname"><span class="pre">read_public_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">public_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fast_file_encryption.read_public_key" title="Link to this definition"></a></dt>
+<dd><p>Load a PEM-encoded public RSA key.</p>
+<p>You can provide the key in multiple formats:</p>
+<ul class="simple">
+<li><p>A <cite>Path</cite> object pointing to a PEM file</p></li>
+<li><p>A <cite>str</cite> or <cite>bytes</cite> object containing the PEM-encoded key</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>public_key</strong> (<em>Union</em><em>[</em><em>pathlib.Path</em><em>, </em><em>str</em><em>, </em><em>bytes</em><em>]</em>) – The input source for the public key.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A parsed public key object for use in encryption operations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>RSAPublicKey</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fast_file_encryption.read_private_key">
+<span class="sig-prename descclassname"><span class="pre">fast_file_encryption.</span></span><span class="sig-name descname"><span class="pre">read_private_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">private_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fast_file_encryption.read_private_key" title="Link to this definition"></a></dt>
+<dd><p>Load a PEM-encoded private RSA key.</p>
+<p>Accepts file paths, strings, or bytes. If the key is password-protected, you can provide the password as a string or byte sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>private_key</strong> (<em>Union</em><em>[</em><em>pathlib.Path</em><em>, </em><em>str</em><em>, </em><em>bytes</em><em>]</em>) – The input source for the private key.</p></li>
+<li><p><strong>password</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>str</em><em>, </em><em>bytes</em><em>]</em><em>]</em>) – Optional password to decrypt the key if it is protected.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A parsed private key object for use in decryption operations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>RSAPrivateKey</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fast_file_encryption.save_key_pair">
+<span class="sig-prename descclassname"><span class="pre">fast_file_encryption.</span></span><span class="sig-name descname"><span class="pre">save_key_pair</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">public_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fast_file_encryption.save_key_pair" title="Link to this definition"></a></dt>
+<dd><p>Generate and save a new RSA 4096-bit key pair.</p>
+<p>This function creates a new private and public key pair, and writes each to a separate file using the PEM format. This is the recommended way to create key material for this library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>public_key</strong> (<em>pathlib.Path</em>) – Path where the PEM-encoded public key will be written.</p></li>
+<li><p><strong>private_key</strong> (<em>pathlib.Path</em>) – Path where the PEM-encoded private key will be written.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>For automation and scripting purposes, the generated private key is <strong>not encrypted with a password</strong>.
+Make sure you store it securely—ideally in a protected location such as a hardware security module (HSM) or secure key vault.</p>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="errors.html" class="btn btn-neutral float-left" title="Exceptions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../format.html" class="btn btn-neutral float-right" title="The File Format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2025, Tobias Erbsland and EducateIT GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

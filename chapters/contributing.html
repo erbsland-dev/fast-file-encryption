@@ -1,0 +1,223 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contributing Guidelines &mdash; Fast File Encryption 1.2.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a5753347"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Code of Conduct" href="code-of-conduct.html" />
+    <link rel="prev" title="File Sizes" href="file-sizes.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Fast File Encryption
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About the Library</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="get-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="format.html">The File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="goals.html">Design Goals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="used-algorithms.html">Used Algorithms and Hashes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="file-sizes.html">File Sizes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing Guidelines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#code-of-conduct">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-can-i-contribute">How Can I Contribute?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#reporting-bugs">Reporting Bugs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#suggesting-enhancements">Suggesting Enhancements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#code-contributions">Code Contributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pull-requests">Pull Requests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#style-guidelines">Style Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#coding-style">Coding Style</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#commit-messages">Commit Messages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#legal">Legal</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#licensing-of-contributions">Licensing of Contributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#copyright-notice-for-contributions">Copyright Notice for Contributions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code-of-conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Fast File Encryption</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Contributing Guidelines</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/chapters/contributing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="contributing-guidelines">
+<h1>Contributing Guidelines<a class="headerlink" href="#contributing-guidelines" title="Link to this heading"></a></h1>
+<p>First of all, thank you for considering to contribute to our software! We appreciate your time and effort. This document provides a set of guidelines to help ensure a smooth contribution process. Please take a moment to review and follow these guidelines to help maintain a healthy and inclusive project environment.</p>
+<section id="code-of-conduct">
+<h2>Code of Conduct<a class="headerlink" href="#code-of-conduct" title="Link to this heading"></a></h2>
+<p>By participating in this project, you agree to abide by the <a class="reference internal" href="code-of-conduct.html"><span class="doc">Code of Conduct</span></a>. Please ensure you read and follow its principles to help maintain a welcoming and inclusive community environment.</p>
+</section>
+<section id="how-can-i-contribute">
+<h2>How Can I Contribute?<a class="headerlink" href="#how-can-i-contribute" title="Link to this heading"></a></h2>
+<section id="reporting-bugs">
+<h3>Reporting Bugs<a class="headerlink" href="#reporting-bugs" title="Link to this heading"></a></h3>
+<p>If you encounter a bug, please create a new issue in the project’s issue tracker. Be sure to include the following information:</p>
+<ul class="simple">
+<li><p>A clear and concise description of the bug.</p></li>
+<li><p>Steps to reproduce the issue.</p></li>
+<li><p>Any additional information that may be helpful (e.g., screenshots, logs, or environment details).</p></li>
+</ul>
+</section>
+<section id="suggesting-enhancements">
+<h3>Suggesting Enhancements<a class="headerlink" href="#suggesting-enhancements" title="Link to this heading"></a></h3>
+<p>To suggest a new feature or enhancement, please create a new issue in the project’s issue tracker. In your suggestion, include:</p>
+<ul class="simple">
+<li><p>A clear and concise description of the enhancement.</p></li>
+<li><p>The motivation behind the suggestion (e.g., how it would improve the project or solve a problem).</p></li>
+<li><p>Any relevant examples or resources that support your suggestion.</p></li>
+</ul>
+</section>
+<section id="code-contributions">
+<h3>Code Contributions<a class="headerlink" href="#code-contributions" title="Link to this heading"></a></h3>
+<p>At Erbsland DEV, we maintain high standards for security, reliability, and quality in our software. To ensure the integrity of the codebase, we do not accept pull requests by default. If you would like to contribute code, please follow the steps below:</p>
+<ol class="arabic simple">
+<li><p>Start by reporting a bug or suggesting a feature through the issue tracker. Alternatively, you can contact us directly to discuss your proposed contribution.</p></li>
+<li><p>Wait for feedback from the maintainers or the community. This will help ensure that your proposed changes align with the project’s goals and quality standards.</p></li>
+<li><p>Once your proposal has been reviewed and approved, you may proceed with creating a pull request. Make sure to follow the instructions outlined in the [Pull Requests](#pull-requests) section.</p></li>
+</ol>
+<p>Please note that any pull requests submitted without prior communication or approval may be declined. This policy helps maintain the quality and consistency of the Erbsland DEV project. Your understanding and cooperation are greatly appreciated.</p>
+</section>
+<section id="pull-requests">
+<h3>Pull Requests<a class="headerlink" href="#pull-requests" title="Link to this heading"></a></h3>
+<p>Once your proposal has been reviewed and approved, please follow these steps to contribute code changes:</p>
+<ol class="arabic simple">
+<li><p>Create a new branch for your changes.</p></li>
+<li><p>Compile and test your changes.</p></li>
+<li><p>Write unit tests that test your added code through fully.</p></li>
+<li><p>Commit the changes to your new branch.</p></li>
+<li><p>Push your changes to your fork on GitHub.</p></li>
+<li><p>Open a pull request on the original repository and the repository with the unit tests.</p></li>
+</ol>
+<p>Please note: <strong>Make sure your code follows _the exact coding style_ of the existing code.</strong> Code that is not formatted as existing code of the project is a reason to <strong>reject</strong> your pull request.</p>
+</section>
+</section>
+<section id="style-guidelines">
+<h2>Style Guidelines<a class="headerlink" href="#style-guidelines" title="Link to this heading"></a></h2>
+<section id="coding-style">
+<h3>Coding Style<a class="headerlink" href="#coding-style" title="Link to this heading"></a></h3>
+<p><strong>This project uses “Black” for code formatting.</strong></p>
+<p>If you contribute code, you must run the “Black” code formatter with the parameter <code class="docutils literal notranslate"><span class="pre">--line-length=120</span></code>.</p>
+<p>Please also follow these general coding style guidelines:</p>
+<ul class="simple">
+<li><p>Document all classes, methods and instance variables using doc-strings.</p></li>
+<li><p>Document internal and private methods if its use is not obvious.</p></li>
+</ul>
+</section>
+<section id="commit-messages">
+<h3>Commit Messages<a class="headerlink" href="#commit-messages" title="Link to this heading"></a></h3>
+<p>When writing commit messages, follow these guidelines:</p>
+<ul class="simple">
+<li><p>Write concise and descriptive commit messages.</p></li>
+<li><p>Start the commit message with a capital letter.</p></li>
+<li><p>List <em>every</em> change of your commit, group the changes where possible.</p></li>
+<li><p>If you do extensive changes, split them into multiple small commits.</p></li>
+</ul>
+</section>
+</section>
+<section id="legal">
+<h2>Legal<a class="headerlink" href="#legal" title="Link to this heading"></a></h2>
+<section id="licensing-of-contributions">
+<h3>Licensing of Contributions<a class="headerlink" href="#licensing-of-contributions" title="Link to this heading"></a></h3>
+<p>All contributions must be made under the same license as the project.</p>
+</section>
+<section id="copyright-notice-for-contributions">
+<h3>Copyright Notice for Contributions<a class="headerlink" href="#copyright-notice-for-contributions" title="Link to this heading"></a></h3>
+<p>By contributing to this project, you agree to license your contributions under the same terms as the existing copyright and license. Your contributions will be incorporated into the existing copyrighted material without separate copyright attribution. This does not affect your rights to use your own contributions for any other purpose, including licensing them under different terms.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="file-sizes.html" class="btn btn-neutral float-left" title="File Sizes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="code-of-conduct.html" class="btn btn-neutral float-right" title="Code of Conduct" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2025, Tobias Erbsland and EducateIT GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

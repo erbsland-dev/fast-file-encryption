@@ -1,0 +1,188 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Goals &mdash; Fast File Encryption 1.2.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a5753347"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Used Algorithms and Hashes" href="used-algorithms.html" />
+    <link rel="prev" title="Design Notes" href="design.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Fast File Encryption
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About the Library</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="get-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="format.html">The File Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design Notes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Design Goals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#goals">Goals</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#archive-data">Archive Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ease-of-use">Ease of Use</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#minimal-dependencies">Minimal Dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#large-files">Large Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#separate-metadata-block">Separate Metadata Block</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prevention-of-data-loss-theft-on-breach">Prevention of Data Loss/Theft on Breach</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#protection-from-data-corruption">Protection from Data Corruption</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#non-goals">Non-Goals</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multiple-keys-trust-networks">Multiple Keys / Trust Networks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#protection-from-malicious-manipulation">Protection from Malicious Manipulation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="used-algorithms.html">Used Algorithms and Hashes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="file-sizes.html">File Sizes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code-of-conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Fast File Encryption</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Design Goals</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/chapters/goals.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="design-goals">
+<h1>Design Goals<a class="headerlink" href="#design-goals" title="Link to this heading"></a></h1>
+<section id="goals">
+<h2>Goals<a class="headerlink" href="#goals" title="Link to this heading"></a></h2>
+<section id="archive-data">
+<h3>Archive Data<a class="headerlink" href="#archive-data" title="Link to this heading"></a></h3>
+<p>This file encryption format was designed to securely archive data on servers where a potential breach cannot be confidently excluded. It enables automated systems to efficiently encrypt and store incoming files using a locally stored public key.</p>
+</section>
+<section id="ease-of-use">
+<h3>Ease of Use<a class="headerlink" href="#ease-of-use" title="Link to this heading"></a></h3>
+<p>Proper encryption is notoriously difficult and often implemented incorrectly. This format deliberately simplifies usage by offering <strong>no configuration options</strong> for encryption strength, algorithms, or key sizes. It is designed to be <strong>secure by default</strong> and to prevent accidental weakening of encryption through misconfiguration.</p>
+<p>If vulnerabilities are discovered in the currently used algorithms, the format can be updated to use improved alternatives while maintaining <strong>backward compatibility for decryption</strong>.</p>
+</section>
+<section id="minimal-dependencies">
+<h3>Minimal Dependencies<a class="headerlink" href="#minimal-dependencies" title="Link to this heading"></a></h3>
+<p>To reduce external risk and simplify installation, this library depends only on the widely-used and well-maintained <code class="docutils literal notranslate"><span class="pre">cryptography</span></code> package, which is based on OpenSSL.</p>
+</section>
+<section id="large-files">
+<h3>Large Files<a class="headerlink" href="#large-files" title="Link to this heading"></a></h3>
+<p>The format is optimized for efficiently encrypting large files when their size is known. The block structure is designed to allow hashing and encryption to be performed in a <strong>single pass</strong>, avoiding the need to read the same data multiple times.</p>
+<p>It also supports <strong>streaming encryption</strong>, enabling data to be encrypted in memory as it is received—e.g. over a network—and streamed directly to persistent storage.</p>
+</section>
+<section id="separate-metadata-block">
+<h3>Separate Metadata Block<a class="headerlink" href="#separate-metadata-block" title="Link to this heading"></a></h3>
+<p>A dedicated metadata block allows storing detailed information about the original file, as well as any contextual data. Because metadata is stored separately, it can be quickly extracted without processing the full file.</p>
+</section>
+<section id="prevention-of-data-loss-theft-on-breach">
+<h3>Prevention of Data Loss/Theft on Breach<a class="headerlink" href="#prevention-of-data-loss-theft-on-breach" title="Link to this heading"></a></h3>
+<p>If the server that performs encryption is compromised, the already-encrypted files remain safe—even if the public key is exposed. The private key needed to decrypt the data is stored <strong>outside the server environment</strong>, typically in a secure hardware module (HSM), and is not accessible to an attacker.</p>
+<p>Each file includes a hash of the public key used for encryption. This makes it possible to rotate key pairs over time or per file. For example, a new key pair could be generated monthly, with older private keys archived securely offline. This approach minimizes exposure in the event of a data breach, where an attacker may copy encrypted files in hopes of accessing them later.</p>
+</section>
+<section id="protection-from-data-corruption">
+<h3>Protection from Data Corruption<a class="headerlink" href="#protection-from-data-corruption" title="Link to this heading"></a></h3>
+<p>SHA3-512 checksums are generated for the metadata, the file content, and the entire file. These checksums enable reliable detection of data corruption.</p>
+<ul class="simple">
+<li><p>The checksums for metadata and file content are encrypted.</p></li>
+<li><p>The overall file checksum is stored <strong>unencrypted</strong>, allowing quick file integrity checks without decryption.</p></li>
+</ul>
+</section>
+</section>
+<section id="non-goals">
+<h2>Non-Goals<a class="headerlink" href="#non-goals" title="Link to this heading"></a></h2>
+<section id="multiple-keys-trust-networks">
+<h3>Multiple Keys / Trust Networks<a class="headerlink" href="#multiple-keys-trust-networks" title="Link to this heading"></a></h3>
+<p>This library and format are not intended as replacements for tools like PGP/GPG, which support encryption with multiple public keys. It is designed for <strong>automated server-side encryption</strong>, where a single recipient (or system) is the target.</p>
+</section>
+<section id="protection-from-malicious-manipulation">
+<h3>Protection from Malicious Manipulation<a class="headerlink" href="#protection-from-malicious-manipulation" title="Link to this heading"></a></h3>
+<p>While file integrity is protected by checksums, those checksums are <strong>not digitally signed</strong>. This means there is a small risk that a file could be maliciously altered in a way that remains undetected.</p>
+<p>If an attacker gains access to a server, they also gain access to the public key and can encrypt arbitrary files—making it possible to <strong>replace existing encrypted files</strong> without detection.</p>
+<p>To prevent insight into encrypted contents, the checksums for metadata and file data are encrypted using the same symmetric key. This also helps detect <strong>bit-flip attacks</strong> on AES-CBC encrypted data, although such tampering will only be detected <strong>after decryption</strong>.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="design.html" class="btn btn-neutral float-left" title="Design Notes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="used-algorithms.html" class="btn btn-neutral float-right" title="Used Algorithms and Hashes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2025, Tobias Erbsland and EducateIT GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
