@@ -33,9 +33,9 @@ Explore the full documentation:
 * Key management tools and utilities
 * Technical details of the file format
 
-▶️ `Reference Manual <https://erbsland-dev.github.io/fast-file-encryption/chapters/reference/>`_
+▶️ `Reference Manual <https://erbsland-dev.github.io/fast-file-encryption/chapters/reference/index.html>`_
 
-▶️ `File Format Specification <https://erbsland-dev.github.io/fast-file-encryption/format.html>`_
+▶️ `File Format Specification <https://erbsland-dev.github.io/fast-file-encryption/chapters/format.html>`_
 
 Requirements
 ------------
@@ -64,7 +64,7 @@ Project Goals
 * **No Key = No Access** — Data remains safe even if a server is compromised.
 * **Corruption Detection** — Built-in checksums detect silent corruption.
 
-▶️ `More about our design goals <https://erbsland-dev.github.io/fast-file-encryption/goals.html>`_
+▶️ `More about our design goals <https://erbsland-dev.github.io/fast-file-encryption/chapters/goals.html>`_
 
 Bug Reports & Feature Requests
 ------------------------------
@@ -76,7 +76,7 @@ Have feedback or ideas? Found a bug? We'd love to hear from you.
 License
 -------
 
-Copyright © 2021–2024
+Copyright © 2021–2025
 Tobias Erbsland – https://erbsland.dev/
 EducateIT GmbH – https://educateit.ch/
 
